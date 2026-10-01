@@ -18,7 +18,9 @@ Use when the user asks, or offer it when the user corrects you (AGENTS.md rule 2
    for it already existed, find out why it was missed instead of copying the rule somewhere else.
 4. Log it in the project's `mistakes-and-learnings.md` with an ID from `scripts/next-id.sh C`
    (rule 41). Put the prevention check in the workflow that needs it and fill "Wired into".
-5. Save a case in `cases/<short-id>.md` that follows the contract.
+5. Save a case in `cases/<short-id>.md` that follows the contract. If the mistake is a query trap
+   a text pattern can catch, also add a rule to `scripts/sql-lint/rules.tsv` with bad+good fixtures
+   (`knowledge/verification.md`, "Every wrong number becomes structure").
 6. Run it with `skills/run-verification-tests/`. Show the negative control fails on the old
    behavior and the fixed source passes — using temporary copies, not by reverting live files.
    If you can't reproduce, fix or run it, keep the case, mark it UNABLE, and don't call it fixed.

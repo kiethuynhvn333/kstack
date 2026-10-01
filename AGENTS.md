@@ -49,7 +49,7 @@ If `profile.md` or `workspace.md` is missing, or a task needs an answer they mar
 | Analyze performance, compare periods, diagnose, plan or read a test | `rules/analysis.md` (22–29) |
 | Use a new tool, hit blocked access, or make any live change | `rules/actions.md` (30–36) |
 | Write to memory, end a session, or run a knowledge review | `rules/memory.md` (37–45) |
-| Share a fresh number | `skills/quick-metric-self-check/` |
+| Share, report, or act on a fresh number | `skills/verify-number/` (tiers T0–T3, stamp; `knowledge/verification.md`) |
 | Log a mistake as a regression test / rerun saved tests | `skills/fix-and-save-mistake/`, `skills/run-verification-tests/` |
 | Weekly knowledge review | `skills/weekly-knowledge-review/` |
 

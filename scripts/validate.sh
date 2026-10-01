@@ -13,6 +13,8 @@ fail() { echo "✗ $*"; exit 1; }
 for f in AGENTS.md rules/setup.md rules/analysis.md rules/actions.md rules/memory.md \
          knowledge/INDEX.md knowledge/universal-learnings.md knowledge/meta/inbox.md \
          knowledge/meta/review-log.md scripts/next-id.sh \
+         knowledge/verification.md knowledge/verified-recipes.md skills/verify-number/SKILL.md \
+         scripts/sql-lint.sh scripts/sql-lint/rules.tsv scripts/recipe-check.sh \
          projects/_template/worklog.md projects/_template/_segment/decisions.md \
          projects/_template/_segment/open-items.md projects/_template/_segment/experiments.md \
          projects/_template/_segment/mistakes-and-learnings.md; do
@@ -78,7 +80,12 @@ for f in skills/*/SKILL.md; do
   done
 done
 
-# 6. No leftover TODOs in active files
+# 6. Verification machinery: every lint rule fires on its bad fixture and stays silent on its good
+#    one, and every verified recipe's query still matches the hash it was verified at
+sh scripts/sql-lint.sh --selftest || fail "sql-lint selftest failed (above)"
+sh scripts/recipe-check.sh >/dev/null || { sh scripts/recipe-check.sh; fail "A verified recipe is stale (above)"; }
+
+# 6b. No leftover TODOs in active files
 if grep -REn '\[TODO|TODO:' AGENTS.md rules knowledge projects 2>/dev/null; then
   fail "Unresolved TODO in an active file (above)"
 fi

@@ -16,7 +16,8 @@ setup", or a task needs an answer these files mark unknown.
 5. Ask: Which actions may I take independently, which need approval, and who can approve spending,
    tracking changes, publication, and messages?
 6. Ask: Which tools and data sources are available, which sources are trusted for each purpose,
-   and what timezone, currency, and review cadence should we use?
+   who or what can independently check a number (and how long it takes), and what timezone,
+   currency, and review cadence should we use?
 7. Ask in small batches. Let the user skip optional questions and start useful work; keep
    unanswered business facts and permissions marked unknown. An unknown permission means "ask first".
 8. When editing is allowed, show the proposed content, then save confirmed working preferences in

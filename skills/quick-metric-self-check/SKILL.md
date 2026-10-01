@@ -36,5 +36,6 @@ the sentence from step 1. Don't pick samples by whatever sort order is handy.
   If it could happen again, log it in `mistakes-and-learnings.md` (rule 41).
 - **Headed into a decision or a canonical file:** it still needs an independent check — another
   source, a reconciliation, or another person or agent who doesn't see your method (rule 26).
+  Use `skills/verify-number/`: this self-check is its T0 step only.
 
 This checks your query, not the source. It cannot catch a gap inside the table you queried.

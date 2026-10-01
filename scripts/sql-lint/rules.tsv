@@ -1,0 +1,8 @@
+# id<TAB>severity<TAB>fires when file matches<TAB>and also matches<TAB>unless file matches<TAB>message<TAB>reference
+# Case-insensitive extended regex on the file with -- comments removed and lines flattened. Empty field = not used.
+# A deliberate exception: put `-- lint-allow: <ID> <reason>` in the query (user's OK only). FAIL = stop and fix. WARN = say so next to the number. Every rule needs fixtures/<id>.bad.sql and <id>.good.sql.
+# Add a rule when a mistake in mistakes-and-learnings.md is a text-detectable query trap (see knowledge/verification.md).
+L001	WARN	select +\*			SELECT * - name the columns; a schema change silently changes your result	universal
+L002	WARN	current_date *\(		max *\( *([a-z_]+\.)?date *\)	relative date used as 'latest' - data loads with a delay; use MAX(date) and state the as-of date	rules/analysis.md 24
+L003	WARN	else *'[^']*' *end			CASE with a catch-all ELSE bucket - unclassified rows get silently labelled; check it is deliberate	universal
+L004	FAIL	shared_orders		store_id *(=|in)	EXAMPLE RULE (synthetic): shared_orders holds every store; reading it without a store_id filter mixes stores. Replace with a trap from your own mistakes-and-learnings.md	example
