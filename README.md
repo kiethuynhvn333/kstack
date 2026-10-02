@@ -1,47 +1,44 @@
 # kstack-ai-digital-media-workflow
 
-**Your AI agent forgets everything when the chat ends. Your campaigns don't.**
+KStack is a file-based workspace template for AI-assisted digital media work, covering paid search, paid social, tracking, reporting and experiments.
 
----
+Campaign work depends on context: business goals, metric definitions, previous decisions and tests still in progress. When that context stays scattered across chats and documents, you have to reconstruct it before the agent can continue.
 
-It's Monday morning. You open a new chat and start explaining again: which campaigns matter this
-quarter, what "a lead" means in your business, which test is still running. Twenty minutes later
-the agent is finally up to speed — and it suggests raising the budget on the campaign you're
-testing. The same change that ruined a test three weeks ago.
+KStack gives that context a defined home. Projects hold objectives, decisions, experiments and session worklogs. A shared knowledge hub holds metric definitions and reusable lessons. Agent instructions define what to read first, which checks to run and when to ask for approval.
 
-It's not the agent's fault. It wasn't there three weeks ago.
+The template uses Markdown files and shell scripts, versioned with Git. It works with file-reading agents such as Claude Code, Codex, Cursor and Gemini CLI, without a separate server or database.
 
-Digital media work is long. Tests run for weeks, every metric has fine print, and one careless
-change can wreck a month of learning. Chat agents are short: every session starts from zero.
-**kstack closes that gap.** It's a folder of plain files your agent reads before it does anything —
-so it starts every session already knowing your goals, your numbers, your history and your rules.
+## Six ideas behind KStack
 
-## Five ideas behind kstack
+### 1. Projects organized around objectives
 
-### 1. Projects run like OKRs
-Every objective has a target, a deadline and an owner, and becomes its own project folder —
-decisions, open items, experiments and mistakes, split by brand, market or client. The agent
-always knows which goal a task serves. Ask it "why this change?" and it points to the objective.
+Each objective has a target, deadline and owner, with its own project folder. Decisions, open items, experiments and mistakes are organized by brand, market or client. This gives the agent a clear basis for connecting each task and recommendation to the goal it serves.
 
-### 2. One knowledge hub, loaded smart
-Metric definitions, platform lessons and hard-won learnings live in one place, with an index.
-The agent opens only the page the task needs — not the whole library — so it stays fast and focused.
+### 2. Shared knowledge, loaded when needed
 
-### 3. Memory that outlives the chat
-Every session ends with a short worklog entry: done, found, decided, next. The next session starts
-from it. Switch tools, laptops or models — the memory is in your git repo, not in someone's app.
+Metric definitions, platform guidance and reusable lessons live in one knowledge hub. An index directs the agent to the pages relevant to its task, keeping shared knowledge available without loading the entire library into every session.
 
-### 4. Reflect, catch mistakes, evolve
-When you correct the agent, it finds the real cause, fixes it, and saves a check so the same
-mistake gets caught next time. Once a week you run the review: it looks back at what it learned and
-proposes updates — you approve. The agent gets better every week, and never grades its own homework.
+### 3. Memory that carries across sessions
 
-### 5. Skills and guardrails made for digital media
-It checks a number before it shows you one — lint, sanity checks, a replay of a saved query, and a
-stamp saying what was and wasn't verified, so you aren't left waiting on a data team for every figure.
-It trusts your own business data over platform-reported conversions. Before any budget, bid or targeting change it shows a **live change card** — current
-settings, before → after, what it checked, the risk, how to undo — and waits for your yes. New
-campaigns start paused.
+Each session ends with a short worklog: what was done, what was found, what was decided and what comes next. The next session starts from that record. Context stays in the repository, where it can be reviewed, updated and carried between tools and machines.
+
+### 4. Verify the inputs before analyzing them
+
+Useful analysis starts with reliable numbers, accurate information and current context. The intended workflow checks each input against the source of truth for that claim: the agreed data source, metric definition, approved decision or current documentation.
+
+Verification uses several layers. For numbers, this means checking definitions and scope, data freshness and completeness, calculations, saved verified methods and independent evidence where required. For information and context, it means tracing claims to their sources and checking whether they are current, approved or still assumptions.
+
+The answer should show its sources, the checks completed and any unresolved gaps. Missing or conflicting evidence should remain visible rather than becoming a confident conclusion. Analysis and next steps should stay within what those checks support.
+
+**Current scope:** KStack includes number-verification workflows. Extending this approach across factual information and context is planned.
+
+### 5. Turn corrections into reusable checks
+
+When a mistake is identified, the workflow calls for finding its cause, correcting the source and proposing a check that can catch it again. Weekly reviews propose lessons for approval before adding them to shared knowledge. Improvements become reviewable changes to the workspace.
+
+### 6. Skills and approval rules for digital media
+
+Reusable skills define the steps for recurring tasks. Approval rules set the boundaries for live actions. Before changing budgets, bids, targeting or tracking, the agent must present a live change card covering current settings, the proposed change, checks, risks and how to undo it. New campaigns start paused.
 
 ## A week with kstack
 
@@ -60,7 +57,7 @@ session starts already knowing your business, your projects, what was decided la
 which mistakes not to repeat.
 
 Works with any agent that can read files: Claude Code, Codex, Cursor, Gemini CLI and others.
-No install, no server, no database — just Markdown files and two shell scripts, synced with git.
+No install, no server, no database — just Markdown files and shell scripts, synced with git.
 
 > Built from ~4 months of daily use by an in-house performance marketer. The public version is a
 > neutral template: every example uses a made-up company.
