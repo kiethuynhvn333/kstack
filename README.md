@@ -10,11 +10,11 @@ The template uses Markdown files and shell scripts, versioned with Git. It works
 
 ## Six ideas behind KStack
 
-### 1. Projects organized around objectives
+### 1. Projects organized around OKRs
 
-Each objective has a target, deadline and owner, with its own project folder. Decisions, open items, experiments and mistakes are organized by brand, market or client. This gives the agent a clear basis for connecting each task and recommendation to the goal it serves.
+Each project connects an objective to measurable key results, with clear targets, deadlines and owners. Decisions, open items, experiments and mistakes stay in the same project folder, organized by brand, market or client. This gives the agent a clear basis for explaining which goal a recommendation serves and how progress will be measured.
 
-### 2. Shared knowledge, loaded when needed
+### 2. Knowledge hub, loaded when needed
 
 Metric definitions, platform guidance and reusable lessons live in one knowledge hub. An index directs the agent to the pages relevant to its task, keeping shared knowledge available without loading the entire library into every session.
 
@@ -32,7 +32,7 @@ The answer should show its sources, the checks completed and any unresolved gaps
 
 **Current scope:** KStack includes number-verification workflows. Extending this approach across factual information and context is planned.
 
-### 5. Turn corrections into reusable checks
+### 5. Reflect, Mistakes and Learnings
 
 When a mistake is identified, the workflow calls for finding its cause, correcting the source and proposing a check that can catch it again. Weekly reviews propose lessons for approval before adding them to shared knowledge. Improvements become reviewable changes to the workspace.
 
