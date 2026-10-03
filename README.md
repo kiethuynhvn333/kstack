@@ -75,16 +75,89 @@ No install, no server, no database — just Markdown files and shell scripts, sy
 | **Skills** | Repeatable workflows that load the rules they need as Step 0 | `skills/` |
 | **Tools and permissions** | What each tool is trusted for, and what the agent may do alone vs with approval | `workspace.md`, `rules/actions.md` |
 
-## Quick start
+## Quick start — let your AI tool do it
 
-1. Click **Use this template** → create a **private** repository. Your `workspace.md` will hold
-   real business details — never put it in a public repo.
-2. Clone it and open the folder in your AI agent.
-3. Say **"set up"**. The agent interviews you (`rules/setup.md`), shows what it will write, and
-   creates `profile.md`, `workspace.md` and your project folders.
-4. Work as usual. At the end of each session the agent writes a worklog entry; next session it
-   reads it first.
-5. Once a week, say **"run the weekly knowledge review"**.
+About 10 minutes. You need a computer and an **AI desktop app that can read and write files and run
+commands on your computer** (for example the Claude desktop app's Code tab, Codex, Cursor or Gemini CLI).
+A plain chat window that cannot touch your files will not work, because KStack's memory *is* files.
+
+### 1. Create a free GitHub account (recommended)
+Go to **https://github.com/signup**, follow the prompts (or choose **Continue with Google**) and
+**verify your email** when GitHub asks. GitHub is where your private copy of KStack lives and is backed
+up. You can start without it (see the prompt below), but you will want it for backups and updates.
+
+### 2. Open your AI app in an empty folder
+Create a new empty folder on your computer (for example `KStack`) and open it as the project folder in
+your AI app.
+
+### 3. Paste this to your agent
+```text
+I want to start using KStack: https://github.com/kiethuynhvn333/kstack
+It is a template of plain files that gives you a memory for my digital-media work.
+Please set it up for me in this folder:
+
+1. Check that git is installed. If it is not, tell me how to install it, then stop and wait.
+2. Check whether the GitHub CLI (gh) is installed and I am signed in (gh auth status).
+   - If yes: ask me what to name my private copy, then create it as a PRIVATE repository from
+     the template and clone it here:
+       gh repo create <name> --template kiethuynhvn333/kstack --private --clone
+   - If not: do not install anything without asking me. Offer two choices:
+     (a) help me install gh and sign in with "gh auth login --web" (I finish the sign-in in my browser), or
+     (b) work on my computer only: git clone https://github.com/kiethuynhvn333/kstack.git <name>
+         then run "git remote remove origin" inside it, so nothing can be sent to the public
+         repository. I can create a private GitHub copy later.
+3. Open the new folder, read AGENTS.md and follow it, and start the "set up" interview.
+
+Ask me before you create anything on GitHub. Never put my passwords or tokens in any file, and never
+ask me to paste them into this chat. I sign in through the browser myself.
+```
+
+### 4. Answer its questions
+It asks what to name your private copy, may ask you to sign in to GitHub in your browser, and then
+starts the setup interview in small batches (`rules/setup.md`): who you are, your objectives and
+targets, how you like to work, what it may do alone and what needs your approval, and which tools and
+numbers you trust. It shows what it will write; say yes. It creates `profile.md`, `workspace.md` and
+one project folder per objective. You can skip any question; unanswered items are saved as `unknown`.
+
+**Next time, open the new folder it created (the one named after your private copy, containing
+`AGENTS.md`) as the project folder**, not the empty one you started from.
+
+### 5. Work as usual
+Talk about your work. You do not need to say "save this". The agent records decisions, open items,
+tests and mistakes as you go and writes a short worklog entry at the end of the session. In a **new**
+chat, say **"let's continue"**: it reads the last entry, your decisions and your open items first.
+
+### 6. Once a week
+Say **"run the weekly knowledge review"**. It shows what it learned and proposes updates. Nothing
+changes until you approve.
+
+### Back up your work
+Your agent never commits or pushes on its own. Ask it to *"commit my changes and push them"* when you
+want a copy on GitHub; it will confirm first. If you started computer-only, ask it to *"create a
+**private** GitHub repository for this folder and push it"* once you have a GitHub account.
+
+### Prefer to do it yourself?
+1. Create the GitHub account (step 1), then open **https://github.com/kiethuynhvn333/kstack**.
+2. Click the green **Use this template** button, then **Create a new repository**.
+3. **Owner:** your account. **Repository name:** anything (letters, numbers, `.`, `-`, `_`; no spaces).
+   **Choose Private.** Your `workspace.md` will hold real business details. Click
+   **Create repository from template**.
+4. Put it on your computer: install **GitHub Desktop** (**https://desktop.github.com**), sign in, open your
+   new repository's page on GitHub, click **Code → Open with GitHub Desktop → Choose... → Clone**. Or run
+   `git clone <the HTTPS address under Code>` in a terminal (needs [Git](https://git-scm.com/downloads)).
+5. Open that folder in your AI app and say **"set up"**.
+
+Do not use **Fork** or **Download ZIP**. A fork of a public repository stays public, and a ZIP has no
+Git history, which the checks and the update script need.
+
+### If something goes wrong
+- **The agent ignores the rules:** tell it *"Read AGENTS.md first and follow it."*
+- **The agent cannot run `scripts/validate.sh`:** it should say so. Memory still works; only the
+  automatic structure check is skipped. The scripts are tested on macOS. On Windows, install
+  **Git for Windows** (it includes Git Bash) so the agent can run them.
+- **It asks you to sign in:** your copy is private, so GitHub needs to know it is you. Sign in in the
+  browser when asked.
+- **A new KStack release came out:** see "Keep your workspace up to date" below.
 
 ## Keep your workspace up to date
 
