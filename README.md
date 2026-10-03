@@ -111,7 +111,8 @@ Please set it up for me:
          repository. I can create a private GitHub copy later.
 4. Open the new folder, read AGENTS.md and follow it, and start the "set up" interview.
 5. At the end, tell me the full path of my folder and remind me to open that folder as my
-   project folder next time.
+   project folder next time. Then, in one bold line, remind me that nothing is backed up yet and
+   that I should type "commit and push".
 
 Ask me before you create anything on GitHub. Never put my passwords or tokens in any file, and never
 ask me to paste them into this chat. I sign in through the browser myself.
@@ -137,9 +138,14 @@ Say **"run the weekly knowledge review"**. It shows what it learned and proposes
 changes until you approve.
 
 ### Back up your work
-Your agent never commits or pushes on its own. Ask it to *"commit my changes and push them"* when you
-want a copy on GitHub; it will confirm first. If you started computer-only, ask it to *"create a
-**private** GitHub repository for this folder and push it"* once you have a GitHub account.
+Your agent saves files on your computer as you work, but it **never commits or pushes on its own**.
+So at the end of each session it reminds you with a bold line. When you see it, type:
+
+> **commit and push**
+
+and the agent saves a copy to your private GitHub (it confirms first). If you started computer-only,
+type **commit** to keep a history on your computer, and later ask it to *"create a **private** GitHub
+repository for this folder and push it"* once you have a GitHub account.
 
 ### Prefer to do it yourself?
 1. Create the GitHub account (step 1), then open **https://github.com/kiethuynhvn333/kstack**.

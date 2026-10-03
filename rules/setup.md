@@ -41,3 +41,5 @@ Start from `profile.example.md` and `workspace.example.md`. Unknown answers stay
 - You ran `scripts/validate.sh` and fixed what it reported before telling the user setup is done.
   If you cannot run shell commands, say so and list the structure you could not check.
 - The first worklog entry records that setup ran, what was answered, and what is still unknown.
+- Your last message ends with one bold line telling the user their files are saved on this computer
+  only, and to type **commit and push** to back them up (just **commit** if there is no GitHub copy).

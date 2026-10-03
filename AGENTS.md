@@ -41,6 +41,7 @@ If `profile.md` or `workspace.md` is missing, or a task needs an answer they mar
 - 36. No credentials in project files. No real business data in public material.
 - 37–38. When writing is allowed, end every substantive session with a worklog entry, including
   every external action and whether it was verified.
+  Then, in one bold line, remind the user nothing is backed up until they say "commit and push".
 
 ## Load when needed
 | When you are about to… | Read first |
