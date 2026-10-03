@@ -86,27 +86,32 @@ Go to **https://github.com/signup**, follow the prompts (or choose **Continue wi
 **verify your email** when GitHub asks. GitHub is where your private copy of KStack lives and is backed
 up. You can start without it (see the prompt below), but you will want it for backups and updates.
 
-### 2. Open your AI app in an empty folder
-Create a new empty folder on your computer (for example `KStack`) and open it as the project folder in
-your AI app.
+### 2. Open your AI app
+Open your AI desktop app. You can start with any folder, or none: the agent creates your KStack on
+your Desktop, a permanent place, in the next step.
 
 ### 3. Paste this to your agent
 ```text
 I want to start using KStack: https://github.com/kiethuynhvn333/kstack
 It is a template of plain files that gives you a memory for my digital-media work.
-Please set it up for me in this folder:
+Please set it up for me:
 
 1. Check that git is installed. If it is not, tell me how to install it, then stop and wait.
-2. Check whether the GitHub CLI (gh) is installed and I am signed in (gh auth status).
-   - If yes: ask me what to name my private copy, then create it as a PRIVATE repository from
-     the template and clone it here:
+2. Choose a permanent home first: a new folder on my Desktop (or another folder I name). Do all the
+   work from there, so my KStack lives at <Desktop>/<name>. Never leave it in a temporary or
+   session folder.
+3. Check whether the GitHub CLI (gh) is installed and I am signed in (gh auth status).
+   - If yes: ask me what to name my private copy, then, from my Desktop, create it as a PRIVATE
+     repository from the template and clone it:
        gh repo create <name> --template kiethuynhvn333/kstack --private --clone
    - If not: do not install anything without asking me. Offer two choices:
      (a) help me install gh and sign in with "gh auth login --web" (I finish the sign-in in my browser), or
-     (b) work on my computer only: git clone https://github.com/kiethuynhvn333/kstack.git <name>
+     (b) work on my computer only: from my Desktop, git clone https://github.com/kiethuynhvn333/kstack.git <name>
          then run "git remote remove origin" inside it, so nothing can be sent to the public
          repository. I can create a private GitHub copy later.
-3. Open the new folder, read AGENTS.md and follow it, and start the "set up" interview.
+4. Open the new folder, read AGENTS.md and follow it, and start the "set up" interview.
+5. At the end, tell me the full path of my folder and remind me to open that folder as my
+   project folder next time.
 
 Ask me before you create anything on GitHub. Never put my passwords or tokens in any file, and never
 ask me to paste them into this chat. I sign in through the browser myself.
@@ -119,8 +124,8 @@ targets, how you like to work, what it may do alone and what needs your approval
 numbers you trust. It shows what it will write; say yes. It creates `profile.md`, `workspace.md` and
 one project folder per objective. You can skip any question; unanswered items are saved as `unknown`.
 
-**Next time, open the new folder it created (the one named after your private copy, containing
-`AGENTS.md`) as the project folder**, not the empty one you started from.
+**Next time, open the KStack folder it created on your Desktop (named after your private copy, and
+containing `AGENTS.md`) as the project folder.**
 
 ### 5. Work as usual
 Talk about your work. You do not need to say "save this". The agent records decisions, open items,
