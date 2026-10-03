@@ -32,10 +32,18 @@
 | Stable "how it works" knowledge | the matching `knowledge/` topic |
 | Likely true, not yet confirmed | `knowledge/meta/inbox.md` |
 
+A fact, link or reference is not a decision: stable facts go to the matching `knowledge/` topic,
+or to the inbox if unconfirmed. An unchecked hunch, or something said without evidence, goes to
+`knowledge/meta/inbox.md` as a hypothesis — not to `open-items.md` or `decisions.md`.
+
 The fields in rules 39–41 are the template columns — fill the columns, don't add free text.
 New IDs (D- decision, C- mistake, O- open item, E- experiment, K- inbox) come from
 `scripts/next-id.sh <prefix>`, never "the next number" in one file. Review cadence comes from
 `workspace.md`; the review itself is `skills/weekly-knowledge-review/`.
+Date check: at the start of a session that touches a project, compare today's date with the dates
+in `experiments.md` and `open-items.md`. Tell the user in one line about any Planned experiment
+past its start date, Running one past its end date, or open item past its review date. Never close
+or mark Concluded by inference (rule 44).
 
 ## Session-end entry
 ```text
@@ -46,3 +54,6 @@ Decided:   approved decisions (ID + approver)
 Actions:   external changes — proposed / attempted / completed / verified
 Open·Next: unresolved items (IDs) and the exact next resume point
 ```
+After writing any memory file at the end of a session, run `scripts/validate.sh` and fix what it
+reports. If you cannot run shell, say so in the worklog entry. If the worklog is over 250 lines,
+move the oldest entries to `archive/` (rule 45) — validation fails on a worklog over 250 lines.

@@ -36,5 +36,8 @@ Start from `profile.example.md` and `workspace.example.md`. Unknown answers stay
 
 ## Done when
 - Both files exist and the user has confirmed their content.
-- Every project folder has a `worklog.md` and each segment has the four tracking files.
+- Every project folder has a `worklog.md`, a `deliverables/` folder, and each segment has the four
+  tracking files.
+- You ran `scripts/validate.sh` and fixed what it reported before telling the user setup is done.
+  If you cannot run shell commands, say so and list the structure you could not check.
 - The first worklog entry records that setup ran, what was answered, and what is still unknown.

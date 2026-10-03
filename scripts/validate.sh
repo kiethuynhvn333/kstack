@@ -54,6 +54,7 @@ check_lines knowledge/meta/inbox.md 100
 for f in $tracking_files; do
   case "$f" in */decisions.md|*/open-items.md) check_lines "$f" 150 ;; esac
 done
+for f in projects/*/worklog.md; do check_lines "$f" 250; done   # rule 45: rotate old entries to archive/
 for f in $(find knowledge -type f -name '*.md' ! -name INDEX.md); do check_lines "$f" 200; done
 
 # 4. IDs: right prefix for the file, and never used twice across the repo (rule 43)
