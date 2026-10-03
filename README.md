@@ -86,6 +86,84 @@ No install, no server, no database — just Markdown files and shell scripts, sy
    reads it first.
 5. Once a week, say **"run the weekly knowledge review"**.
 
+## Keep your workspace up to date
+
+KStack is open source under the MIT license. Follow changes in this repository; tagged releases
+are version snapshots, while `main` may contain newer changes. Updates to KStack do not
+automatically update your working folder. A small script (below) applies an update when you run it;
+nothing changes by itself.
+
+Keep your working repository **private**. A fork of this public repository stays public, so use
+**Use this template** for real work. Template-created repositories have separate Git histories;
+do not treat them as forks or blindly merge this repository into your workspace.
+
+### Quick update
+
+Your repository was made from the template, so it has no link back to this one and GitHub's
+"Sync" button will not work. `scripts/update.sh` does the job. Run it inside your private repo,
+with your work committed:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kiethuynhvn333/kstack/main/scripts/update.sh -o /tmp/kstack-update.sh
+sh /tmp/kstack-update.sh
+```
+
+It shows what will change and asks before touching anything. After the first run you can use
+`sh scripts/update.sh` instead. Add a tag such as `v0.3.0` to pin a release, or `--yes` to skip
+the question.
+
+- **It updates** the files KStack ships: `AGENTS.md`, the tool entry files, `CHANGELOG.md`, `rules/`,
+  `skills/`, `scripts/` and `projects/_template/`. It overwrites those files, so keep your own
+  preferences in `profile.md` and `workspace.md`, not in them. Your own extra skills are left alone.
+- **It adds** new files under `knowledge/` and new `*.example.md` files.
+- **It never touches** `profile.md`, `workspace.md`, your project folders, your worklogs or your
+  learned knowledge.
+- **It lists, but does not change,** files that exist in both versions and may hold your edits
+  (for example `knowledge/INDEX.md`). Ask your agent to merge the new parts into yours and keep
+  your content.
+- **It runs `scripts/validate.sh` and does not commit.** Read `CHANGELOG.md` for what changed,
+  check `git status`, then commit. To undo before committing: `git reset --hard HEAD`.
+
+### Manual review (full control)
+
+Prefer to review every change yourself, or want to see what a release changes before you apply it?
+
+1. Commit your current work in your private repository, or make a complete backup, before updating.
+2. Keep a separate, unchanged reference copy of KStack. Do not put your business context in it:
+
+   ```bash
+   git clone --branch main https://github.com/kiethuynhvn333/kstack.git kstack-upstream
+   ```
+
+   To refresh that reference copy later, run this **inside `kstack-upstream` only**:
+
+   ```bash
+   git pull --ff-only
+   git rev-parse HEAD
+   ```
+
+3. Ask your agent to compare the reference copy with your private workspace and explain the
+   changes. Review instructions, rules, skills, scripts, tool entry files and project templates.
+   Keep your own permissions and custom rules unless you explicitly approve a change.
+4. Apply only the changes you approve. Do not replace `profile.md`, `workspace.md`, real project
+   folders, worklogs or your learned knowledge with template defaults. If a knowledge file has
+   upstream changes, review and combine the relevant parts instead of copying over your version.
+5. Run `scripts/validate.sh` and the checks relevant to the changed workflows. Structural
+   validation does not prove that an agent follows the rules or that a live number is correct.
+6. Record the source commit from `git rev-parse HEAD`, the changes applied and the checks in your
+   private worklog. Commit the reviewed update so the previous version remains recoverable.
+
+You can use this request with a file-reading agent:
+
+> Compare my private workspace with the separate KStack reference folder. Show the proposed
+> updates and any conflicts before changing files. Preserve my business context, permissions,
+> project history and learned knowledge. Apply only the updates I approve, run the relevant
+> checks, and record the source commit and result in my worklog. Do not publish my private files.
+
+GitHub references: [template repositories](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template),
+[fork visibility](https://docs.github.com/en/pull-requests/reference/forks), and
+[versioned releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
+
 ## How a session works
 
 ```text
@@ -107,7 +185,7 @@ workspace.example.md   business, metrics, tools, permissions → copied to works
 projects/_template/    worklog + 4 tracking files per segment
 knowledge/             INDEX router, metrics, channels, universal learnings, inbox
 skills/                verify-number, self-check, fix-and-save-mistake, verification tests, weekly review
-scripts/               next-id.sh (unique IDs) · validate.sh (structure check) · sql-lint.sh · recipe-check.sh
+scripts/               next-id.sh (unique IDs) · validate.sh (structure check) · sql-lint.sh · recipe-check.sh · update.sh
 archive/               superseded records — kept, never default-loaded
 ```
 
@@ -122,6 +200,10 @@ Prints the next free decision ID for the whole repo (also `O`, `E`, `C`, `K`).
 scripts/validate.sh
 ```
 Checks required files, size limits, duplicate IDs and skill Step 0 lines. Run it before each commit.
+
+```bash
+scripts/update.sh                    # bring the shipped KStack files up to the latest release (see "Keep your workspace up to date")
+```
 
 ```bash
 scripts/sql-lint.sh query.sql        # known query traps from your own mistakes; --selftest proves each rule fires

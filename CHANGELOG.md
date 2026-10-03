@@ -1,5 +1,44 @@
 # Changelog
 
+## v0.3.0 — Memory that holds, and a way to update (2026-10-03)
+
+### Why
+The promise is that your agent starts every session knowing what happened in the last one. Before
+shipping more, we tested that promise instead of assuming it. And a template has a second problem:
+once you have set it up, how do you get the next release without losing your own data?
+
+### How it was tested
+Two AI agents (Grok and ChatGPT) each played the repo's agent for six made-up users: an e-commerce
+marketer, an agency with three clients, a vague freelancer, a Vietnamese-speaking shop, a B2B team with
+a 14-day sales lag, and a messy owner-operator. Each "session" was a fresh chat that could only know
+what the files said. The user never asked the agent to save anything.
+
+- **What held:** decisions, open items and tests were saved as they were mentioned; a fresh chat three
+  days later recalled them correctly and refused a budget change that contradicted a saved decision;
+  after ten sessions over three weeks the agents still answered 6 of 6 recall questions, kept superseded
+  decisions instead of overwriting them, kept an unconfirmed rumour out of the facts, refused to store a
+  token and a password, and the weekly review stopped for approval.
+- **What broke, and is fixed below:** a worklog grew past its 250-line limit with nothing to stop it; one
+  setup left a project without `deliverables/` and never ran validation; a URL was filed as a decision;
+  a test stayed `Planned` for weeks after its start date.
+- **Limits:** one run per scenario, two models, made-up users. The agents played both sides and could see
+  the scripted user lines. Treat it as strong evidence, not proof.
+
+### What shipped
+- **`scripts/update.sh`** — update an existing workspace to a new release. It replaces only the files KStack
+  ships (rules, skills, scripts, entry files, templates), adds new knowledge files, lists the ones you may have
+  edited, runs the validator, and never touches `profile.md`, `workspace.md` or your projects. See the README.
+- **Validation is part of the routine:** setup is not "done" until `scripts/validate.sh` passes and every
+  project has `deliverables/`; every session that writes memory ends with it. A worklog over 250 lines now fails.
+- **Filing hints:** a fact or link is not a decision; an unchecked hunch or hearsay goes to the inbox.
+- **Date check:** at the start of a session the agent flags a Planned test past its start, a Running one past its
+  end, and open items past their review date, without closing anything by inference.
+- **README:** why to use the template and never fork it, and two ways to update.
+
+### Known issue
+"Don't change anything" about your ads is not the same as "read-only". One agent took it to mean "don't save
+memory" and skipped the worklog for that session. Say "read-only" or "don't change any files" when you mean it.
+
 ## v0.2.0 — Verification: a number earns trust in tiers (2026-10-02)
 
 ### Why
