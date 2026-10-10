@@ -1,14 +1,14 @@
-# kstack-ai-digital-media-workflow
+# kstack
 
-KStack is a file-based workspace template for AI-assisted digital media work, covering paid search, paid social, tracking, reporting and experiments.
+kstack is an open-source workspace for digital-media and growth practitioners working with AI agents.
 
-Campaign work depends on context: business goals, metric definitions, previous decisions and tests still in progress. When that context stays scattered across chats and documents, you have to reconstruct it before the agent can continue.
+Paid-media and growth work spans goals, campaigns, experiments, reporting and decisions. When that context is scattered across chats and documents, both you and your agent have to reconstruct the project before work can continue.
 
-KStack gives that context a defined home. Projects hold objectives, decisions, experiments and session worklogs. A shared knowledge hub holds metric definitions and reusable lessons. Agent instructions define what to read first, which checks to run and when to ask for approval.
+kstack gives each objective a project home for its decisions, experiments, open items and session worklogs. A shared knowledge hub holds metric definitions and reusable lessons. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
 
 The template uses Markdown files and shell scripts, versioned with Git. It works with file-reading agents such as Claude Code, Codex, Cursor and Gemini CLI, without a separate server or database.
 
-## Six ideas behind KStack
+## Six ideas behind kstack
 
 ### 1. Projects organized around OKRs
 
@@ -30,7 +30,7 @@ Verification uses several layers. For numbers, this means checking definitions a
 
 The answer should show its sources, the checks completed and any unresolved gaps. Missing or conflicting evidence should remain visible rather than becoming a confident conclusion. Analysis and next steps should stay within what those checks support.
 
-**Current scope:** KStack includes number-verification workflows. Extending this approach across factual information and context is planned.
+**Current scope:** kstack includes number-verification workflows. Extending this approach across factual information and context is planned.
 
 ### 5. Reflect, Mistakes and Learnings
 
@@ -51,10 +51,10 @@ Reusable skills define the steps for recurring tasks. Approval rules set the bou
 
 ## What it is
 
-An operating system for AI agents that work on digital media: paid search, paid social,
-tracking, reporting and experiments. Clone it, answer a 10-minute setup interview, and every new
-session starts already knowing your business, your projects, what was decided last week, and
-which mistakes not to repeat.
+An open-source workspace for digital-media and growth practitioners working with AI agents on
+paid search, paid social, tracking, reporting and experiments. Clone it, answer a 10-minute setup
+interview, and new sessions can start from your recorded business context, projects, decisions and
+past mistakes.
 
 Works with any agent that can read files: Claude Code, Codex, Cursor, Gemini CLI and others.
 No install, no server, no database — just Markdown files and shell scripts, synced with git.
@@ -79,26 +79,26 @@ No install, no server, no database — just Markdown files and shell scripts, sy
 
 About 10 minutes. You need a computer and an **AI desktop app that can read and write files and run
 commands on your computer** (for example the Claude desktop app's Code tab, Codex, Cursor or Gemini CLI).
-A plain chat window that cannot touch your files will not work, because KStack's memory *is* files.
+A plain chat window that cannot touch your files will not work, because kstack's memory *is* files.
 
 ### 1. Create a free GitHub account (recommended)
 Go to **https://github.com/signup**, follow the prompts (or choose **Continue with Google**) and
-**verify your email** when GitHub asks. GitHub is where your private copy of KStack lives and is backed
+**verify your email** when GitHub asks. GitHub is where your private copy of kstack lives and is backed
 up. You can start without it (see the prompt below), but you will want it for backups and updates.
 
 ### 2. Open your AI app
-Open your AI desktop app. You can start with any folder, or none: the agent creates your KStack on
+Open your AI desktop app. You can start with any folder, or none: the agent creates your kstack on
 your Desktop, a permanent place, in the next step.
 
 ### 3. Paste this to your agent
 ```text
-I want to start using KStack: https://github.com/kiethuynhvn333/kstack
+I want to start using kstack: https://github.com/kiethuynhvn333/kstack
 It is a template of plain files that gives you a memory for my digital-media work.
 Please set it up for me:
 
 1. Check that git is installed. If it is not, tell me how to install it, then stop and wait.
 2. Choose a permanent home first: a new folder on my Desktop (or another folder I name). Do all the
-   work from there, so my KStack lives at <Desktop>/<name>. Never leave it in a temporary or
+   work from there, so my kstack lives at <Desktop>/<name>. Never leave it in a temporary or
    session folder.
 3. Check whether the GitHub CLI (gh) is installed and I am signed in (gh auth status).
    - If yes: ask me what to name my private copy, then, from my Desktop, create it as a PRIVATE
@@ -125,7 +125,7 @@ targets, how you like to work, what it may do alone and what needs your approval
 numbers you trust. It shows what it will write; say yes. It creates `profile.md`, `workspace.md` and
 one project folder per objective. You can skip any question; unanswered items are saved as `unknown`.
 
-**Next time, open the KStack folder it created on your Desktop (named after your private copy, and
+**Next time, open the kstack folder it created on your Desktop (named after your private copy, and
 containing `AGENTS.md`) as the project folder.**
 
 ### 5. Work as usual
@@ -168,12 +168,12 @@ Git history, which the checks and the update script need.
   **Git for Windows** (it includes Git Bash) so the agent can run them.
 - **It asks you to sign in:** your copy is private, so GitHub needs to know it is you. Sign in in the
   browser when asked.
-- **A new KStack release came out:** see "Keep your workspace up to date" below.
+- **A new kstack release came out:** see "Keep your workspace up to date" below.
 
 ## Keep your workspace up to date
 
-KStack is open source under the MIT license. Follow changes in this repository; tagged releases
-are version snapshots, while `main` may contain newer changes. Updates to KStack do not
+kstack is open source under the MIT license. Follow changes in this repository; tagged releases
+are version snapshots, while `main` may contain newer changes. Updates to kstack do not
 automatically update your working folder. A small script (below) applies an update when you run it;
 nothing changes by itself.
 
@@ -196,7 +196,7 @@ It shows what will change and asks before touching anything. After the first run
 `sh scripts/update.sh` instead. Add a tag such as `v0.3.0` to pin a release, or `--yes` to skip
 the question.
 
-- **It updates** the files KStack ships: `AGENTS.md`, the tool entry files, `CHANGELOG.md`, `rules/`,
+- **It updates** the files kstack ships: `AGENTS.md`, the tool entry files, `CHANGELOG.md`, `rules/`,
   `skills/`, `scripts/` and `projects/_template/`. It overwrites those files, so keep your own
   preferences in `profile.md` and `workspace.md`, not in them. Your own extra skills are left alone.
 - **It adds** new files under `knowledge/` and new `*.example.md` files.
@@ -213,7 +213,7 @@ the question.
 Prefer to review every change yourself, or want to see what a release changes before you apply it?
 
 1. Commit your current work in your private repository, or make a complete backup, before updating.
-2. Keep a separate, unchanged reference copy of KStack. Do not put your business context in it:
+2. Keep a separate, unchanged reference copy of kstack. Do not put your business context in it:
 
    ```bash
    git clone --branch main https://github.com/kiethuynhvn333/kstack.git kstack-upstream
@@ -239,7 +239,7 @@ Prefer to review every change yourself, or want to see what a release changes be
 
 You can use this request with a file-reading agent:
 
-> Compare my private workspace with the separate KStack reference folder. Show the proposed
+> Compare my private workspace with the separate kstack reference folder. Show the proposed
 > updates and any conflicts before changing files. Preserve my business context, permissions,
 > project history and learned knowledge. Apply only the updates I approve, run the relevant
 > checks, and record the source commit and result in my worklog. Do not publish my private files.
@@ -286,7 +286,7 @@ scripts/validate.sh
 Checks required files, size limits, duplicate IDs and skill Step 0 lines. Run it before each commit.
 
 ```bash
-scripts/update.sh                    # bring the shipped KStack files up to the latest release (see "Keep your workspace up to date")
+scripts/update.sh                    # bring the shipped kstack files up to the latest release (see "Keep your workspace up to date")
 ```
 
 ```bash
