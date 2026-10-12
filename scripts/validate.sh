@@ -9,6 +9,13 @@ cd "$ROOT"
 
 fail() { echo "✗ $*"; exit 1; }
 
+# 0. Old v0.3 layout? Say how to upgrade before anything else. Files retired in v0.4 (knowledge is captured at session end; see CHANGELOG.md)
+UPGRADE="run: sh scripts/update.sh --migrate  (one-time upgrade of a v0.3 workspace; asks first, keeps your content)"
+test ! -f knowledge/meta/inbox.md || fail "knowledge/meta/inbox.md is retired in v0.4 — $UPGRADE"
+for f in metrics verification verified-recipes; do
+  test ! -f "knowledge/$f.md" || fail "knowledge/$f.md moved to knowledge/measurement/ in v0.4 — $UPGRADE"
+done
+
 # 1. Required files
 for f in AGENTS.md rules/setup.md rules/analysis.md rules/actions.md rules/memory.md \
          knowledge/INDEX.md knowledge/universal-learnings.md \
@@ -19,13 +26,6 @@ for f in AGENTS.md rules/setup.md rules/analysis.md rules/actions.md rules/memor
          projects/_template/_segment/decisions.md projects/_template/_segment/open-items.md \
          projects/_template/_segment/experiments.md projects/_template/_segment/knowledge.md; do
   test -f "$f" || fail "Missing required file: $f"
-done
-
-# 1b. Files retired in v0.4 (knowledge is captured at session end; see CHANGELOG.md)
-UPGRADE="run: sh scripts/update.sh  (it migrates a v0.3 workspace and keeps your content)"
-test ! -f knowledge/meta/inbox.md || fail "knowledge/meta/inbox.md is retired in v0.4 — $UPGRADE"
-for f in metrics verification verified-recipes; do
-  test ! -f "knowledge/$f.md" || fail "knowledge/$f.md moved to knowledge/measurement/ in v0.4 — $UPGRADE"
 done
 
 # 2. Every project has a README, a worklog, deliverables/, and 4 files in each segment folder

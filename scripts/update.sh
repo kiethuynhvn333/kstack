@@ -4,6 +4,8 @@
 #   sh scripts/update.sh              preview what changes, ask, then apply (latest main)
 #   sh scripts/update.sh v0.3.0       a tagged release instead of main
 #   sh scripts/update.sh --yes        apply without asking (for an agent you trust to run it)
+#   sh scripts/update.sh --migrate    only the one-time v0.3 → v0.4 layout upgrade (run it if an older update.sh
+#                                     just installed v0.4; works on top of that uncommitted update)
 #
 # Updates: AGENTS.md, tool entry files, CHANGELOG.md, rules/, skills/, scripts/, projects/_template/
 #   (overwrites the shipped files of the same name; your own extra skills and rules are left alone,
@@ -83,12 +85,12 @@ migrate() {
 }
 
 main() {
-  yes=0; ref=main
-  for a in "$@"; do case "$a" in --yes) yes=1 ;; *) ref="$a" ;; esac; done
+  yes=0; ref=main; only_migrate=0
+  for a in "$@"; do case "$a" in --yes) yes=1 ;; --migrate) only_migrate=1 ;; *) ref="$a" ;; esac; done
 
   root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "✗ This folder is not a git repo. Use your private repo made from the template."; return 1; }
   cd "$root"
-  if [ -n "$(git status --porcelain)" ]; then
+  if [ "$only_migrate" -ne 1 ] && [ -n "$(git status --porcelain)" ]; then
     echo "✗ You have uncommitted changes. Commit or stash them first, so the update is easy to undo."; return 1
   fi
 
@@ -109,6 +111,12 @@ main() {
     fi
     migrate "$target"
     echo
+  fi
+  if [ "$only_migrate" -eq 1 ]; then
+    [ -n "$plan" ] || echo "✓ Layout is already v0.4 — nothing to migrate."
+    if sh scripts/validate.sh; then rc=0; else rc=1; fi
+    echo; echo "Nothing is committed. Review with 'git status', then commit the update."
+    return "$rc"
   fi
 
   paths=""
