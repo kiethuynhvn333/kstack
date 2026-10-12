@@ -2,7 +2,7 @@
 # Update the KStack files that ship with the template, from the public repo. Never touches your data.
 #
 #   sh scripts/update.sh              preview what changes, ask, then apply (latest main)
-#   sh scripts/update.sh v0.3.0       a tagged release instead of main
+#   sh scripts/update.sh v0.4.0       a tagged release instead of main
 #   sh scripts/update.sh --yes        apply without asking (for an agent you trust to run it)
 #   sh scripts/update.sh --migrate    only the one-time v0.3 → v0.4 layout upgrade (run it if an older update.sh
 #                                     just installed v0.4; works on top of that uncommitted update)

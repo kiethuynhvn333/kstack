@@ -6,6 +6,10 @@ Paid-media and growth work spans goals, campaigns, experiments, reporting and de
 
 kstack gives each objective a project home for its decisions, experiments, open items, session worklogs and its own knowledge. A shared knowledge hub holds metric definitions and lessons that hold across projects. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
 
+> **New in v0.4:** your agent now captures what you learned at the end of every session and asks you to
+> approve it while it is fresh, and each project keeps its own knowledge (facts, traps, hypotheses).
+> See [CHANGELOG.md](CHANGELOG.md). Already using kstack? See "Upgrading from v0.3" below.
+
 The template uses Markdown files and shell scripts, versioned with Git. It works with file-reading agents such as Claude Code, Codex, Cursor and Gemini CLI, without a separate server or database.
 
 ## Six ideas behind kstack
@@ -199,7 +203,7 @@ sh /tmp/kstack-update.sh
 ```
 
 It shows what will change and asks before touching anything. After the first run you can use
-`sh scripts/update.sh` instead. Add a tag such as `v0.3.0` to pin a release, or `--yes` to skip
+`sh scripts/update.sh` instead. Add a tag such as `v0.4.0` to pin a release, or `--yes` to skip
 the question.
 
 - **It updates** the files kstack ships: `AGENTS.md`, the tool entry files, `CHANGELOG.md`, `rules/`,
