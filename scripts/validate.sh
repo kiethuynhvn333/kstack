@@ -9,31 +9,40 @@ cd "$ROOT"
 
 fail() { echo "✗ $*"; exit 1; }
 
+# 0. Old v0.3 layout? Say how to upgrade before anything else. Files retired in v0.4 (knowledge is captured at session end; see CHANGELOG.md)
+UPGRADE="run: sh scripts/update.sh --migrate  (one-time upgrade of a v0.3 workspace; asks first, keeps your content)"
+test ! -f knowledge/meta/inbox.md || fail "knowledge/meta/inbox.md is retired in v0.4 — $UPGRADE"
+for f in metrics verification verified-recipes; do
+  test ! -f "knowledge/$f.md" || fail "knowledge/$f.md moved to knowledge/measurement/ in v0.4 — $UPGRADE"
+done
+
 # 1. Required files
 for f in AGENTS.md rules/setup.md rules/analysis.md rules/actions.md rules/memory.md \
-         knowledge/INDEX.md knowledge/universal-learnings.md knowledge/meta/inbox.md \
-         knowledge/meta/review-log.md scripts/next-id.sh \
-         knowledge/verification.md knowledge/verified-recipes.md skills/verify-number/SKILL.md \
+         knowledge/INDEX.md knowledge/universal-learnings.md \
+         knowledge/meta/review-log.md scripts/next-id.sh skills/session-close/SKILL.md \
+         knowledge/measurement/verification.md knowledge/measurement/verified-recipes.md skills/verify-number/SKILL.md \
          scripts/sql-lint.sh scripts/sql-lint/rules.tsv scripts/recipe-check.sh \
-         projects/_template/worklog.md projects/_template/_segment/decisions.md \
-         projects/_template/_segment/open-items.md projects/_template/_segment/experiments.md \
-         projects/_template/_segment/mistakes-and-learnings.md; do
+         projects/_template/README.md projects/_template/worklog.md \
+         projects/_template/_segment/decisions.md projects/_template/_segment/open-items.md \
+         projects/_template/_segment/experiments.md projects/_template/_segment/knowledge.md; do
   test -f "$f" || fail "Missing required file: $f"
 done
 
-# 2. Every project has a worklog, deliverables/, and 4 tracking files in each segment folder
-TRACKING="decisions.md open-items.md experiments.md mistakes-and-learnings.md"
+# 2. Every project has a README, a worklog, deliverables/, and 4 files in each segment folder
+TRACKING="decisions.md open-items.md experiments.md knowledge.md"
 tracking_files=""
 for p in projects/*/; do
   p="${p%/}"
   test "$(basename "$p")" = "_template" && continue
   test -f "$p/worklog.md" || fail "Missing: $p/worklog.md"
+  test -f "$p/README.md" || fail "Missing: $p/README.md (project brief + read order; copy projects/_template/README.md)"
   test -d "$p/deliverables" || fail "Missing folder: $p/deliverables/"
   segs=0
   for s in "$p"/*/; do
     s="${s%/}"
     test "$(basename "$s")" = "deliverables" && continue
     segs=$((segs + 1))
+    test ! -f "$s/mistakes-and-learnings.md" || fail "$s/mistakes-and-learnings.md is retired in v0.4 (rows move to knowledge.md → Traps) — $UPGRADE"
     for f in $TRACKING; do
       test -f "$s/$f" || fail "Missing: $s/$f (copy it from projects/_template/_segment/)"
       tracking_files="$tracking_files $s/$f"
@@ -50,19 +59,18 @@ check_lines() {
 check_lines AGENTS.md 60
 for f in rules/*.md; do check_lines "$f" 60; done
 check_lines knowledge/INDEX.md 100
-check_lines knowledge/meta/inbox.md 100
 for f in $tracking_files; do
   case "$f" in */decisions.md|*/open-items.md) check_lines "$f" 150 ;; esac
 done
-for f in projects/*/worklog.md; do check_lines "$f" 250; done   # rule 45: rotate old entries to archive/
+# Worklogs have no line limit (v0.4): the weekly review moves entries older than 7 days to archive/.
 for f in $(find knowledge -type f -name '*.md' ! -name INDEX.md); do check_lines "$f" 200; done
 
 # 4. IDs: right prefix for the file, and never used twice across the repo (rule 43)
 ids="$(mktemp)"; trap 'rm -f "$ids"' EXIT
-for f in $tracking_files knowledge/meta/inbox.md; do
+for f in $tracking_files; do
   case "$f" in
     */decisions.md) want=D ;; */open-items.md) want=O ;; */experiments.md) want=E ;;
-    */mistakes-and-learnings.md) want=C ;; */inbox.md) want=K ;;
+    */knowledge.md) want=C ;;
   esac
   awk -F'|' -v f="$f" '$2 ~ /^ *[A-Z]-[0-9][0-9][0-9]+ *$/ { id=$2; gsub(/ /, "", id); print id "\t" f }' "$f" >> "$ids"
   bad="$(awk -F'|' -v w="$want" '$2 ~ /^ *[A-Z]-[0-9][0-9][0-9]+ *$/ { id=$2; gsub(/ /, "", id); if (substr(id,1,1) != w) print id }' "$f")"

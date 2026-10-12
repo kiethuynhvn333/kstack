@@ -1,48 +1,44 @@
 ---
 name: weekly-knowledge-review
-description: The weekly self-update of the knowledge base — scan recent sessions and project files, find missed decisions and lessons, conflicts, stale and duplicate items, and propose evidence-backed changes for the owner to approve. Use on the review cadence, when the inbox reaches 20 items, or when the user asks to review or clean up knowledge.
+description: The short weekly knowledge check. Knowledge is captured at the end of each session by skills/session-close/; this skill only (1) asks the owner yes/no on moving project knowledge marked ↑ up to the shared knowledge/ folder, (2) flags sessions that skipped session-close, (3) audits experiments and hypotheses (running, overdue, concluded), and (4) moves worklog entries older than 7 days to archive/. Use on the review cadence in workspace.md, or when the user asks to review knowledge or audit experiments.
 ---
 
 # Weekly knowledge review
 
-> **Step 0 — read first:** `rules/memory.md` (rules 37–45)
-> (repo root). This skill does that work, so load it before anything else.
+> **Step 0 — read first:** `rules/memory.md` (rules 37–45, repo root).
 
-This is how a week of project work becomes durable knowledge. It proposes; the owner decides.
-It never changes a canonical file before the owner approves (rules 42, 44).
+Every item shown here is something the owner already approved once at session close, or a test
+with a date, so they can answer without re-reading the week. The whole message fits on one screen.
+Nothing changes before the owner answers (rule 44).
 
-## 1. Set the window
-1. Read `knowledge/meta/maintenance.md` and the last row of `knowledge/meta/review-log.md`.
-2. The window runs from that review to today (7 days if there's no earlier review). If reviews
-   were skipped, cover the whole gap and say so — don't quietly shrink it.
-3. Use `git log --since=<date> --name-only` to list what changed.
+## 1. Window
+The window runs from the last row of `knowledge/meta/review-log.md` to today (7 days if there is no
+earlier review). If reviews were skipped, cover the whole gap and say so.
 
-## 2. Scan every project, every segment
-Read the window's worklog entries and changed rows in each project's decisions, open-items,
-experiments and mistakes-and-learnings — including quiet segments. For each possible lesson
-note: the exact claim, its type, the source file and date, the evidence, confidence, one
-destination, and any conflict with current knowledge.
-Repetition, recency, or an agent saying so is not evidence.
+## 2. Move-up check (↑ items)
+Find every ↑ in the projects' `knowledge.md` files (`grep -rn '↑' projects --include=knowledge.md`),
+skipping lines already marked "moved up". For each, propose one line: `<claim> → <shared file>`
+(`knowledge/measurement/` for metrics and data, `knowledge/channels/<platform>.md` for platforms,
+`knowledge/universal-learnings.md` for working lessons). On yes: write it into the shared file with
+its evidence and confidence words, and replace the project line with `→ moved up to <file> (date)`.
+On no: remove the ↑ and add `kept in project`.
 
-## 3. Sort each candidate
-Promote · Supersede · Deduplicate · Defer · Drop (definitions in `knowledge/meta/maintenance.md`).
-Also check:
-- **Experiments:** mark each row Running, Concluded or Unclear from its own text. Never infer
-  Concluded from silence or an old date — Unclear rows need the owner's answer.
-- **Open items:** stale rows go to the owner; never close one just because it's quiet.
-- **IDs:** run `scripts/validate.sh` — it fails on duplicate or wrong-prefix IDs.
+## 3. Missed captures
+List worklog entries in the window with no **Fixed knowledge** / **Unproven knowledge** lines
+(session-close was skipped). Don't rebuild their knowledge yourself — offer to run session-close on
+that topic now, or skip.
 
-## 4. Show the report, then stop
-Window and files scanned · missed decisions and lessons · conflicts and stale items · proposed
-disposition per candidate · the exact file-by-file changes · the experiment status table ·
-questions for the owner. Wait for approval. Silence is not approval.
+## 4. Experiment audit
+For every row in every `experiments.md`: **Running** (date not passed), **Overdue** (end or verify-by
+date passed, no result), **Concluded** (the row itself says so). Never infer Concluded from silence or
+an old date. Propose: archive concluded / stopped / verified / disproven rows, and one line per
+overdue row.
 
-## 5. Apply only what was approved
-1. Write each approved claim into its one home: a `knowledge/` topic, or
-   `knowledge/universal-learnings.md` if it holds across projects.
-2. New rows get IDs from `scripts/next-id.sh`. Update inbox statuses; move resolved rows to `archive/`.
-3. Move experiments the owner confirmed Concluded to `archive/<YYYY-MM>/<project>-<segment>-experiments-closed.md`.
-4. Append one row to `knowledge/meta/review-log.md`. Run `scripts/validate.sh`.
+## 5. Show, wait, apply
+Message: `Move up?` list · `Missed sessions` · `Experiments: archive / overdue`. Wait for answers.
+Then apply what was approved, move worklog entries older than 7 days to
+`archive/<YYYY-MM>/<project>-worklog.md` (copy first, check, then remove from the live file), append
+one row to `knowledge/meta/review-log.md`, and run `scripts/validate.sh`.
 
-**Done when:** every approved promotion is in its file, archived rows are gone from live files
+**Done when:** approved move-ups are in their shared files, archived rows are gone from live files
 (not just copied), the review-log row exists, and validation passes.

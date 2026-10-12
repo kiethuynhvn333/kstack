@@ -65,12 +65,12 @@ last updated: 2026-01-15 · confirmed by: the user
 ## Verification
 <!-- Rules 6, 26. Who or what can independently confirm a number, and when it is required.
      The agent verifies a method once, saves it as a recipe, and asks this checker only when a
-     method is new or changed (knowledge/verification.md). unknown = ask the user. -->
+     method is new or changed (knowledge/measurement/verification.md). unknown = ask the user. -->
 - Independent checker: the data team's analytics bot in Slack (#data-help) — reply usually in 30–60 min
 - Trusted for: reproducing warehouse metrics and checking definitions. Not for: ad-platform screens
 - May the agent message it without asking each time? no — the user approves each batch
 - Raw ground-truth source (instant, no waiting): back office export
-- Required tier by use: defaults in knowledge/verification.md (override here if needed)
+- Required tier by use: defaults in knowledge/measurement/verification.md (override here if needed)
 
 ## Permissions
 <!-- Rules 5, 33, 34. Anything not listed here counts as "ask first". -->
@@ -90,7 +90,7 @@ last updated: 2026-01-15 · confirmed by: the user
 <!-- Rules 6, 23, 44. -->
 - Timezone: UTC · Currency: USD ($) · Week starts: Monday
 - Reporting: weekly update to the marketing manager, Monday 10:00 UTC
-- Knowledge review cadence: every Monday, or when the inbox reaches 20 items
+- Knowledge review cadence: every Monday (knowledge itself is captured at the end of each session)
 
 ## House rules
 <!-- Your own extra rules. They add to AGENTS.md; they never remove its safety rules. -->

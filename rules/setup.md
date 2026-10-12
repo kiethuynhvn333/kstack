@@ -29,15 +29,16 @@ setup", or a task needs an answer these files mark unknown.
 |---|---|
 | Rule 4 (working style) | `profile.md` |
 | Rules 2, 3, 5, 6 (business, objectives, permissions, tools, timezone, currency, cadence) | `workspace.md` |
-| Each objective (rule 3) × each segment (rule 2) | `projects/<objective>/<segment>/` copied from `projects/_template/` |
+| Each objective (rule 3) | `projects/<objective>/` copied from `projects/_template/`, with its `README.md` brief filled in |
+| Each objective × each segment (rule 2) | `projects/<objective>/<segment>/` copied from `projects/_template/_segment/` |
 
 Start from `profile.example.md` and `workspace.example.md`. Unknown answers stay in the file as
 `unknown`, never deleted, so the next session knows what is still missing.
 
 ## Done when
 - Both files exist and the user has confirmed their content.
-- Every project folder has a `worklog.md`, a `deliverables/` folder, and each segment has the four
-  tracking files.
+- Every project folder has a filled-in `README.md`, a `worklog.md`, a `deliverables/` folder, and each
+  segment has its four files (`open-items.md`, `decisions.md`, `experiments.md`, `knowledge.md`).
 - You ran `scripts/validate.sh` and fixed what it reported before telling the user setup is done.
   If you cannot run shell commands, say so and list the structure you could not check.
 - The first worklog entry records that setup ran, what was answered, and what is still unknown.

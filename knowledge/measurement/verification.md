@@ -12,7 +12,7 @@ leaves with a **stamp** saying what was checked, so you can see in 10 seconds ho
 | Tier | What it is | Cost | Catches | Does NOT catch |
 |---|---|---|---|---|
 | T0 | `scripts/sql-lint.sh` on the query + `skills/quick-metric-self-check/` | seconds | known text-detectable traps from your own past mistakes | anything new; a clean lint is a smell test, not proof |
-| T1 | Freshness, grain and invariants on the source (`knowledge/checks/`) | one query | missing days, duplicate rows, impossible values, stale tables | a wrong-but-consistent number (a bad filter that keeps the math tidy) |
+| T1 | Freshness, grain and invariants on the source (`knowledge/measurement/checks/`) | one query | missing days, duplicate rows, impossible values, stale tables | a wrong-but-consistent number (a bad filter that keeps the math tidy) |
 | T2 | Golden replay: a recipe's saved query still reproduces its recorded closed-period numbers | one query | the query or table drifting since it was verified | a recipe wrong from the start, if its golden came from your own earlier number |
 | T3 | Independent source: raw ground-truth join, another source, or the independent checker in `workspace.md` → Verification | minutes to hours | method errors, wrong scope, wrong definition | what the checker shares with you (same tables, same blind spot) |
 

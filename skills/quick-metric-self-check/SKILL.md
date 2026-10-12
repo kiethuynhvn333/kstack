@@ -33,7 +33,7 @@ the sentence from step 1. Don't pick samples by whatever sort order is handy.
 ## 4. Say what you found
 - **All clear:** say so, and say it was a self-check — same method, same blind spots (rule 26).
 - **Something surprising:** report it as its own finding and what it changes about the number.
-  If it could happen again, log it in `mistakes-and-learnings.md` (rule 41).
+  If it could happen again, propose a Traps row in the segment's `knowledge.md` (rule 41).
 - **Headed into a decision or a canonical file:** it still needs an independent check — another
   source, a reconciliation, or another person or agent who doesn't see your method (rule 26).
   Use `skills/verify-number/`: this self-check is its T0 step only.

@@ -11,16 +11,16 @@ description: When the user corrects the agent or asks to log a mistake, find the
 Use when the user asks, or offer it when the user corrects you (AGENTS.md rule 20).
 
 1. Read `skills/fix-and-save-mistake/verification-contract.md`. Search existing cases in
-   `cases/` and the project's `mistakes-and-learnings.md` first — reuse a case if it's the same failure.
+   `cases/` and the segment's `knowledge.md` Traps first — reuse a case if it's the same failure.
 2. Write down the wrong result and the intended one. Separate the confirmed cause from a guess.
    Don't accept either the original answer or the correction on faith — check the evidence.
 3. Fix the smallest source that caused it: a query, a skill step, a knowledge file. If a rule
    for it already existed, find out why it was missed instead of copying the rule somewhere else.
-4. Log it in the project's `mistakes-and-learnings.md` with an ID from `scripts/next-id.sh C`
-   (rule 41). Put the prevention check in the workflow that needs it and fill "Wired into".
+4. Propose a Traps row in the segment's `knowledge.md` with an ID from `scripts/next-id.sh C`
+   (rule 41); write it once the user approves (or in `skills/session-close/`). Put the prevention check in the workflow that needs it and fill "Wired into".
 5. Save a case in `cases/<short-id>.md` that follows the contract. If the mistake is a query trap
    a text pattern can catch, also add a rule to `scripts/sql-lint/rules.tsv` with bad+good fixtures
-   (`knowledge/verification.md`, "Every wrong number becomes structure").
+   (`knowledge/measurement/verification.md`, "Every wrong number becomes structure").
 6. Run it with `skills/run-verification-tests/`. Show the negative control fails on the old
    behavior and the fixed source passes — using temporary copies, not by reverting live files.
    If you can't reproduce, fix or run it, keep the case, mark it UNABLE, and don't call it fixed.

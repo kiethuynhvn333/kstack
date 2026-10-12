@@ -1,5 +1,80 @@
 # Changelog
 
+## v0.4.0 — Your agent learns while the session is still fresh (2026-10-12)
+
+**In one line:** kstack now captures what you learned at the end of every session, asks you to approve
+it while you still remember it, and keeps each project's knowledge inside that project — so the next
+session (and the next agent) starts from what the project actually learned.
+
+### The problem
+Working with an AI agent every day, two things kept going wrong:
+
+1. **Lessons were approved too late.** The old weekly review asked you on Monday to approve lessons from
+   Tuesday's session. By then the context was gone, so you either waved things through or let them pile
+   up in an inbox. The knowledge base slowly filled with things nobody had really checked.
+2. **A project's knowledge lived somewhere else.** Mistakes sat in separate log files and lessons in a
+   shared inbox. An agent opening a project could not see what that project had already learned, and
+   repeated old mistakes.
+
+### What you get
+- **A 1-minute close at the end of every session.** Say "wrap up". The new `session-close` skill answers
+  four questions — *What did we do? What's next? What did we learn for sure? What do we still need to
+  check?* — writes the worklog, and shows a short numbered list. Reply "1, 3 yes" and only those are saved.
+- **Sure vs. not-sure knowledge, kept apart.** Things you verified ("broad match on this account always
+  leaks to unrelated searches") go into the project's knowledge. Things that only *look* true ("the new
+  creative may lower cost per lead") go into `experiments.md` as a **Hypothesis** with a verify-by date —
+  never mixed in with facts.
+- **Every project knows what it learned.** Each segment now has one `knowledge.md`: its facts, its
+  **Traps** (past mistakes turned into rules the agent checks before analysis or a live change), and a
+  **Depends on** list of the shared pages it needs. Each project has a `README.md` with the brief, the map
+  and the order to read things in.
+- **Lessons that hold everywhere move up — with your yes.** Mark a lesson ↑ at the end of a session; the
+  weekly review asks once whether it belongs in the shared hub for every project.
+- **A weekly review that takes minutes.** It no longer re-tells your week. It asks the ↑ questions,
+  points out sessions you forgot to close, lists tests and hypotheses past their date, and archives old
+  worklog entries.
+- **A clear starting path for any agent.** Claude, Codex, Cursor or Gemini all read in the same order:
+  rules → your profile → the project README → the last session → open items, decisions and tests → the
+  project's knowledge → the shared hub only if something is still missing.
+
+### Before and after
+| | v0.3 | v0.4 |
+|---|---|---|
+| When lessons get approved | Weekly, days later | At the end of the session, while it is fresh |
+| Where a project's lessons live | Shared inbox + separate mistakes file | The project's own `knowledge.md` |
+| Unproven ideas | Mixed into the inbox with facts | `Hypothesis` rows with a verify-by date |
+| Shared knowledge | Flat folder, lessons promoted from an inbox | Grouped hub; lessons move up only with your yes |
+| Weekly review | Long scan of the whole week | A few yes/no questions |
+| Worklog | Capped at 250 lines | No cap; entries older than 7 days are archived |
+
+### How it was tested
+The template passes its own checks (`scripts/validate.sh`). We built a sample v0.3 workspace — an edited
+metrics page, one logged mistake, one inbox item — and upgraded it two ways (the new update script in one
+go, and an older update script followed by `--migrate`). Both kept every edit and every row, and passed
+the checks; running the upgrade twice changes nothing. A new project made from the v0.4 template passes
+too. This is a structural test on sample data, not a study of real users.
+
+### Upgrading from v0.3
+Run the latest `update.sh` (see the README). It shows a one-time plan and asks first, then:
+moves `metrics.md`, `verification.md`, `verified-recipes.md` and `checks/` into `knowledge/measurement/`
+with your edits; carries every row of each `mistakes-and-learnings.md` into that segment's
+`knowledge.md` → Traps (same columns); archives the old inbox and mistakes files in
+`archive/v0.3-retired/` — none of your content is deleted; and adds a `README.md` to projects that lack
+one. If an older `update.sh` already installed v0.4, `scripts/validate.sh` tells you to run
+`sh scripts/update.sh --migrate`. Inbox rows are not filed automatically: ask your agent to file each one
+(sure → the segment's `knowledge.md`, not sure → a Hypothesis row). Then check `git status` and commit.
+
+### Changed or retired
+- New: `skills/session-close/`, `projects/_template/README.md` (brief + read order),
+  `projects/_template/_segment/knowledge.md`, `Hypothesis` status in `experiments.md`, `update.sh --migrate`.
+- Moved: `knowledge/{metrics,verification,verified-recipes}.md` and `knowledge/checks/` → `knowledge/measurement/`.
+- Retired: `knowledge/meta/inbox.md` and `K-` IDs (`scripts/next-id.sh K` explains where things go now),
+  and `mistakes-and-learnings.md` in every segment (its rows live on as Traps).
+- `decisions.md` now has a bar: only standing rules that would cause a repeatable mistake if ignored,
+  backed by evidence. Facts go to `knowledge.md`; routine test verdicts stay in `experiments.md`.
+- Rewritten: `rules/memory.md`, `skills/weekly-knowledge-review/`, the knowledge `INDEX.md` and
+  `meta/maintenance.md`; `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` spell out the read order.
+
 ## v0.3.0 — Memory that holds, and a way to update (2026-10-03)
 
 ### Why
