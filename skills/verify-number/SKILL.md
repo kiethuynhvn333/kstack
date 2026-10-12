@@ -8,7 +8,7 @@ description: The one entry point for trusting a number before it is shown or use
 > **Step 0 — read first:** `rules/analysis.md` (rules 22–29)
 > (repo root). This skill does that work, so load it before anything else.
 
-Policy, tiers and the stamp format: `knowledge/verification.md`. Read it once per session. The
+Policy, tiers and the stamp format: `knowledge/measurement/verification.md`. Read it once per session. The
 independent checker (who, how to reach, how long it takes) is in `workspace.md` → Verification.
 
 1. **Say what the number is and what it's for.** One line: metric, scope, window, source. Write the
@@ -22,13 +22,13 @@ independent checker (who, how to reach, how long it takes) is in `workspace.md` 
    yourself, and list it under `Allowed:` in the stamp.
    Run `skills/quick-metric-self-check/`. Its checks read real rows, so they need data access. If
    you can't query (no connector, no result in hand), do NOT call the self-check done: the stamp
-   says "T0 lint clean, self-check not run (no data access)". Search the project's
-   `mistakes-and-learnings.md` for the metric first (rule 17).
+   says "T0 lint clean, self-check not run (no data access)". Search the segment's
+   `knowledge.md` Traps for the metric first (rule 17).
 3. **T1 — grain, freshness, invariants (shown in chat or higher).** Run the matching file in
-   `knowledge/checks/` over the same window. A non-zero HARD column is the finding. Use `MAX(date)`
+   `knowledge/measurement/checks/` over the same window. A non-zero HARD column is the finding. Use `MAX(date)`
    as the as-of date and state it. Compute the metric's own math rules on your result.
 4. **T2 — recipe replay (canonical, report, or live change).** Find the row in
-   `knowledge/verified-recipes.md`; run `scripts/recipe-check.sh`. Match + hash OK + `verified`
+   `knowledge/measurement/verified-recipes.md`; run `scripts/recipe-check.sh`. Match + hash OK + `verified`
    → replay the golden window; if it reproduces, a new window from the same unchanged query
    inherits that trust. No row, `replayed`/`candidate`, or STALE → go to T3. A replay that
    doesn't match is a finding: log it, never tune the golden.
@@ -37,7 +37,7 @@ independent checker (who, how to reach, how long it takes) is in `workspace.md` 
    continue working, mark dependents `T3 pending`. On a match, add or upgrade a ledger row
    (closed-period golden, hash from `scripts/recipe-check.sh --hash`). A raw join that uses a filter
    you chose checks the pipeline, not the definition: label it "T3 raw join (own definition)", and if
-   it disagrees with the table, suspect a definition difference (`knowledge/metrics.md`) first. On a mismatch, log a `C-`
+   it disagrees with the table, suspect a definition difference (`knowledge/measurement/metrics.md`) first. On a mismatch, propose a Traps
    row (`scripts/next-id.sh C`) with both methods and numbers; no silent winner. Sending a message
    needs the user's approval unless `workspace.md` → Permissions already grants it (rule 35).
 6. **Stamp it.** Put the stamp directly under the numbers, before any recommendation. If T3

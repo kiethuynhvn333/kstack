@@ -1,5 +1,50 @@
 # Changelog
 
+## v0.4.0 — Capture knowledge when the session ends; keep project knowledge in the project (2026-10-12)
+
+### Why
+Two problems showed up in daily use.
+
+- **The weekly review came too late.** It asked you to approve lessons from sessions you no longer
+  remembered. Proposals either got waved through or piled up in the inbox, and the knowledge base filled
+  with things nobody had really checked.
+- **Project knowledge lived outside the project.** Lessons sat in a shared inbox and in separate mistakes
+  files, so an agent opening a project could not see what that project had learned.
+
+### What changed
+- **New `skills/session-close/`** — the one place knowledge is captured. At the end of a session it answers
+  four questions: what did we do, what are the next steps, any **fixed** knowledge (verified, unlikely to
+  change, shapes what you do next time), any **unproven** knowledge (looks true, needs time to check). It
+  writes the worklog entry, then shows a short list and saves only what you approve.
+- **Each segment gets a `knowledge.md`**: a **Depends on** table (which shared pages to load), Facts, and a
+  **Traps** table (mistakes turned into rules — same columns as the old mistakes file).
+- **Unproven knowledge goes to `experiments.md`**, as a running test's result or a new row with status
+  `Hypothesis` (claim, how you will verify it, verify-by date). It moves to `knowledge.md` only once verified.
+- **Each project gets a `README.md`**: the brief, the map, and the read order.
+- **Two layers, linked both ways.** Shared knowledge (`knowledge/`) holds what is true for every project;
+  `metrics.md`, `verification.md`, `verified-recipes.md` and `checks/` are now grouped in
+  `knowledge/measurement/`. A project lesson that holds everywhere is marked ↑ at session close and moved
+  up in the weekly review, with your yes.
+- **The weekly review is now short**: move ↑ lessons up (yes/no), flag sessions that were not closed, list
+  overdue tests and hypotheses, and move worklog entries older than 7 days to `archive/`.
+- **Worklogs have no line limit** any more; the weekly move keeps them light.
+- **Read order is written out** in `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and the project README: AGENTS.md →
+  profile + workspace → project README → newest worklog entry → open items, decisions, experiments →
+  the segment's `knowledge.md` → `knowledge/INDEX.md` only if something is still missing.
+- **`decisions.md` has a bar**: only standing rules that would cause a real, repeatable mistake if ignored,
+  with evidence. Facts go to `knowledge.md`; routine test verdicts stay in `experiments.md`.
+
+### Retired
+- `knowledge/meta/inbox.md` and `K-` IDs (`scripts/next-id.sh K` now explains where things go instead).
+- `mistakes-and-learnings.md` in every segment (its rows live on as Traps).
+
+### Upgrading from v0.3
+Run `sh scripts/update.sh`. It shows a one-time plan and asks first, then moves your measurement files
+(keeping your edits), carries every mistakes row into the segment's `knowledge.md` → Traps, archives the
+inbox and old mistakes files under `archive/v0.3-retired/` (nothing of yours is deleted), and adds a
+`README.md` to projects that lack one. If your inbox had rows, ask your agent to file each one. Then check
+`git status` and commit. The validator now names the command to run if it finds the old layout.
+
 ## v0.3.0 — Memory that holds, and a way to update (2026-10-03)
 
 ### Why

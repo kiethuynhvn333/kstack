@@ -22,10 +22,10 @@ planning or reading an experiment.
     account behavior before relying on them.
 
 ## Where the answers come from
-- Metric definitions and trusted sources (rule 23): `workspace.md` → Metrics, then `knowledge/metrics.md`.
-- Past findings to check first (rule 17): the project's `mistakes-and-learnings.md` and
+- Metric definitions and trusted sources (rule 23): `workspace.md` → Metrics, then `knowledge/measurement/metrics.md`.
+- Past findings to check first (rule 17): the segment's `knowledge.md` Traps and
   `knowledge/channels/<platform>.md`.
 - Verifying a number (rule 26): tiers, required tier by use and the stamp are in
-  `knowledge/verification.md`; run them with `skills/verify-number/`. `quick-metric-self-check` is
+  `knowledge/measurement/verification.md`; run them with `skills/verify-number/`. `quick-metric-self-check` is
   the T0 part only. Independent checker: `workspace.md` → Verification.
 - Experiment fields (rule 28): the columns of `experiments.md` — fill every one before launch.

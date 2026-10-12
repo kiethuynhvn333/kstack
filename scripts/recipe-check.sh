@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Trust-expiry check for knowledge/verified-recipes.md.
+# Trust-expiry check for knowledge/measurement/verified-recipes.md.
 #   scripts/recipe-check.sh            for every ledger row with a query file + hash, say whether the
 #                              file still matches the hash it was verified at (exit 1 if any is STALE/MISSING)
 #   scripts/recipe-check.sh --hash f   print the hash to paste into the ledger (comments/whitespace/case ignored)
@@ -7,7 +7,8 @@
 set -eu
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 2
 cd "$ROOT"
-LEDGER="knowledge/verified-recipes.md"
+LEDGER="knowledge/measurement/verified-recipes.md"
+[ -f "$LEDGER" ] || [ ! -f knowledge/verified-recipes.md ] || LEDGER="knowledge/verified-recipes.md"   # pre-v0.4 layout
 
 hash_of() { sed 's/--.*$//' "$1" | tr '\n\t' '  ' | tr 'A-Z' 'a-z' | tr -s ' ' | sed 's/^ //; s/ $//' | shasum -a 256 | cut -c1-12; }
 

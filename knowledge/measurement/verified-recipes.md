@@ -1,6 +1,6 @@
 # Verified Recipes (trust ledger)
 
-**Owner:** <name> · **Last reviewed:** <YYYY-MM-DD> · **Policy:** `verification.md` (read it first)
+**Owner:** <name> · **Last reviewed:** <YYYY-MM-DD> · **Policy:** `verification.md` in this folder (read it first)
 
 A recipe = one saved query + the window and numbers it must reproduce. Once **verified**, a fresh
 number from the *unchanged* query does not need another round trip to the independent checker.
@@ -22,4 +22,4 @@ golden known, query not yet pinned or replayed · **stale** = hash changed or re
 3. Replay once from the saved file; if it matches set Status (`verified` if the origin is
    independent, else `replayed`).
 4. Never edit a Golden cell to make a replay pass. A mismatch is a finding: log it in
-   `mistakes-and-learnings.md`.
+   the segment's `knowledge.md` Traps.

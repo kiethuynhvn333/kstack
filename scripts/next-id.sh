@@ -5,8 +5,9 @@
 #   scripts/next-id.sh D   # decision        -> e.g. D-012
 #   scripts/next-id.sh O   # open item
 #   scripts/next-id.sh E   # experiment
-#   scripts/next-id.sh C   # mistake / conflicting sources
-#   scripts/next-id.sh K   # knowledge inbox candidate
+#   scripts/next-id.sh E   # (also a Hypothesis row in experiments.md)
+#   scripts/next-id.sh C   # trap (a mistake or conflicting sources) in a segment's knowledge.md
+# K- (the old knowledge inbox) was retired in v0.4; old K- IDs stay valid in archive/.
 set -eu
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
@@ -14,8 +15,9 @@ cd "$ROOT"
 
 p="${1:-}"
 case "$p" in
-  D|O|E|C|K) ;;
-  *) echo "usage: scripts/next-id.sh D|O|E|C|K  (D=decision O=open item E=experiment C=mistake K=inbox)" >&2; exit 1 ;;
+  D|O|E|C) ;;
+  K) echo "K- (knowledge inbox) is retired since v0.4: fixed knowledge goes to a segment's knowledge.md, unproven to experiments.md (E-)." >&2; exit 1 ;;
+  *) echo "usage: scripts/next-id.sh D|O|E|C  (D=decision O=open item E=experiment/hypothesis C=trap)" >&2; exit 1 ;;
 esac
 
 dirs=""

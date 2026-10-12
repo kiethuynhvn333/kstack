@@ -4,7 +4,7 @@ kstack is an open-source workspace for digital-media and growth practitioners wo
 
 Paid-media and growth work spans goals, campaigns, experiments, reporting and decisions. When that context is scattered across chats and documents, both you and your agent have to reconstruct the project before work can continue.
 
-kstack gives each objective a project home for its decisions, experiments, open items and session worklogs. A shared knowledge hub holds metric definitions and reusable lessons. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
+kstack gives each objective a project home for its decisions, experiments, open items, session worklogs and its own knowledge. A shared knowledge hub holds metric definitions and lessons that hold across projects. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
 
 The template uses Markdown files and shell scripts, versioned with Git. It works with file-reading agents such as Claude Code, Codex, Cursor and Gemini CLI, without a separate server or database.
 
@@ -12,15 +12,15 @@ The template uses Markdown files and shell scripts, versioned with Git. It works
 
 ### 1. Projects organized around OKRs
 
-Each project connects an objective to measurable key results, with clear targets, deadlines and owners. Decisions, open items, experiments and mistakes stay in the same project folder, organized by brand, market or client. This gives the agent a clear basis for explaining which goal a recommendation serves and how progress will be measured.
+Each project connects an objective to measurable key results, with clear targets, deadlines and owners. Decisions, open items, experiments and what the project has learned stay in the same project folder, organized by brand, market or client, with a short `README.md` that tells the agent what the project is and what to read first. This gives the agent a clear basis for explaining which goal a recommendation serves and how progress will be measured.
 
-### 2. Knowledge hub, loaded when needed
+### 2. Two layers of knowledge, loaded when needed
 
-Metric definitions, platform guidance and reusable lessons live in one knowledge hub. An index directs the agent to the pages relevant to its task, keeping shared knowledge available without loading the entire library into every session.
+Knowledge about one project lives inside that project: each segment has a `knowledge.md` with its facts, its traps (past mistakes turned into rules) and a **Depends on** table that points to the shared pages it needs. Knowledge that holds for every project (metric definitions, verification, platform guidance) lives in the shared `knowledge/` hub. The agent reads the project first and follows its links, so it loads only what the task needs. When a project lesson turns out to hold everywhere, the weekly review moves it up to the shared hub, with your yes.
 
-### 3. Memory that carries across sessions
+### 3. Memory that carries across sessions, captured while it is fresh
 
-Each session ends with a short worklog: what was done, what was found, what was decided and what comes next. The next session starts from that record. Context stays in the repository, where it can be reviewed, updated and carried between tools and machines.
+Each session ends with `session-close`, which answers four questions: what did we do, what are the next steps, did we learn anything **fixed** (verified, unlikely to change, worth acting on next time), and anything **unproven** (looks true, needs time to check). The worklog records all four. Next steps become open items, fixed knowledge goes into the project's `knowledge.md`, and unproven knowledge goes into `experiments.md` as a hypothesis — each only after you say yes, while you still remember the session. The next session starts from that record.
 
 ### 4. Verify the inputs before analyzing them
 
@@ -34,7 +34,7 @@ The answer should show its sources, the checks completed and any unresolved gaps
 
 ### 5. Reflect, Mistakes and Learnings
 
-When a mistake is identified, the workflow calls for finding its cause, correcting the source and proposing a check that can catch it again. Weekly reviews propose lessons for approval before adding them to shared knowledge. Improvements become reviewable changes to the workspace.
+When a mistake is identified, the workflow calls for finding its cause, correcting the source and proposing a check that can catch it again; the lesson becomes a trap in the project's knowledge. A short weekly review moves lessons that hold everywhere up to the shared hub, flags sessions that skipped the close, and checks which tests are overdue. Improvements become reviewable changes to the workspace.
 
 ### 6. Skills and approval rules for digital media
 
@@ -46,8 +46,9 @@ Reusable skills define the steps for recurring tasks. Approval rules set the bou
 - **Wednesday** — you ask for a budget increase. The card shows the campaign is in a test until
   Friday, so the agent suggests waiting two days instead.
 - **Thursday** — it gets a number wrong and you correct it. It finds the cause and saves a check.
-- **Next Monday** — the weekly review proposes three lessons. You approve two. They're now
-  knowledge every future session starts with.
+  At the end of the session it proposes the lesson as a trap in the project; you say yes.
+- **Next Monday** — the weekly review asks whether two project lessons hold for every project.
+  You approve one; it moves to the shared hub that every future session can use.
 
 ## What it is
 
@@ -68,10 +69,10 @@ No install, no server, no database — just Markdown files and shell scripts, sy
 |---|---|---|
 | **Agent instructions** | 45 numbered rules: always-on core, the rest loaded only when needed | `AGENTS.md`, `rules/` |
 | **Objective-based project management** | One folder per objective, split by segment, same shape everywhere | `projects/` |
-| **Knowledge hub** | Stable how-it-works knowledge with a router, so agents load only what the task needs | `knowledge/` |
-| **Memory** | Worklog, decisions, open items, experiments — the repo *is* the memory, across tools and machines | `projects/`, `knowledge/` |
-| **Reflect, mistakes, learnings** | Mistakes become regression checks; a weekly review promotes lessons with owner approval | `skills/fix-and-save-mistake/`, `skills/weekly-knowledge-review/` |
-| **Verification** | Four tiers (lint → invariants → replay a saved query → independent check), a stamp on every number, and a ledger of verified queries that expires when a query changes | `knowledge/verification.md`, `skills/verify-number/`, `scripts/sql-lint.sh`, `scripts/recipe-check.sh` |
+| **Knowledge, two layers** | Project knowledge (facts, traps, links to shared pages) inside each project; shared knowledge for every project in a hub with a router | `projects/<p>/<segment>/knowledge.md`, `knowledge/` |
+| **Memory** | Worklog, decisions, open items, experiments — captured at the end of each session with your approval; the repo *is* the memory, across tools and machines | `projects/`, `skills/session-close/` |
+| **Reflect, mistakes, learnings** | Mistakes become traps and regression checks; a short weekly review moves lessons that hold everywhere to the shared hub | `skills/fix-and-save-mistake/`, `skills/weekly-knowledge-review/` |
+| **Verification** | Four tiers (lint → invariants → replay a saved query → independent check), a stamp on every number, and a ledger of verified queries that expires when a query changes | `knowledge/measurement/verification.md`, `skills/verify-number/`, `scripts/sql-lint.sh`, `scripts/recipe-check.sh` |
 | **Skills** | Repeatable workflows that load the rules they need as Step 0 | `skills/` |
 | **Tools and permissions** | What each tool is trusted for, and what the agent may do alone vs with approval | `workspace.md`, `rules/actions.md` |
 
@@ -128,14 +129,17 @@ one project folder per objective. You can skip any question; unanswered items ar
 **Next time, open the kstack folder it created on your Desktop (named after your private copy, and
 containing `AGENTS.md`) as the project folder.**
 
-### 5. Work as usual
-Talk about your work. You do not need to say "save this". The agent records decisions, open items,
-tests and mistakes as you go and writes a short worklog entry at the end of the session. In a **new**
-chat, say **"let's continue"**: it reads the last entry, your decisions and your open items first.
+### 5. Work as usual, and close each session
+Talk about your work. You do not need to say "save this". When you are done, say **"wrap up"**: the
+agent writes the worklog entry and shows a short list — next steps, what it learned that is fixed,
+what is still unproven. Reply with the numbers you want saved (e.g. "1, 3 yes"); nothing else is
+written. In a **new** chat, say **"let's continue"**: it reads the project's README, the last entry,
+your open items and decisions, and the project's knowledge first.
 
 ### 6. Once a week
-Say **"run the weekly knowledge review"**. It shows what it learned and proposes updates. Nothing
-changes until you approve.
+Say **"run the weekly knowledge review"**. It takes a few minutes: it asks whether lessons marked as
+holding everywhere should move to the shared hub, points out sessions that were not closed, and lists
+tests that are overdue. Nothing changes until you approve.
 
 ### Back up your work
 Your agent saves files on your computer as you work, but it **never commits or pushes on its own**.
@@ -169,6 +173,8 @@ Git history, which the checks and the update script need.
 - **It asks you to sign in:** your copy is private, so GitHub needs to know it is you. Sign in in the
   browser when asked.
 - **A new kstack release came out:** see "Keep your workspace up to date" below.
+- **You set up kstack before v0.4:** run the update script. It upgrades the layout once (asks first,
+  deletes none of your content) — see "Upgrading from v0.3" below.
 
 ## Keep your workspace up to date
 
@@ -207,6 +213,20 @@ the question.
   your content.
 - **It runs `scripts/validate.sh` and does not commit.** Read `CHANGELOG.md` for what changed,
   check `git status`, then commit. To undo before committing: `git reset --hard HEAD`.
+
+### Upgrading from v0.3
+
+v0.4 changes how knowledge is stored (see `CHANGELOG.md`). The update script upgrades your workspace
+once, after showing the plan and asking:
+- `knowledge/metrics.md`, `verification.md`, `verified-recipes.md` and `checks/` move into
+  `knowledge/measurement/`, with your edits.
+- Each segment's `mistakes-and-learnings.md` rows move into the segment's new `knowledge.md` →
+  Traps table (same columns). The old file goes to `archive/v0.3-retired/`.
+- `knowledge/meta/inbox.md` goes to `archive/v0.3-retired/`. If it had rows, ask your agent to file
+  each one: fixed → the segment's `knowledge.md`, unproven → `experiments.md` as a Hypothesis row.
+- Projects without a `README.md` get the template one. Ask your agent to fill in the brief.
+
+Then review `git status` and commit, as for any update.
 
 ### Manual review (full control)
 
@@ -251,8 +271,12 @@ GitHub references: [template repositories](https://docs.github.com/en/repositori
 ## How a session works
 
 ```text
-AGENTS.md ─► profile.md + workspace.md ─► active project's worklog ─► decisions + open items
-          ─► knowledge/INDEX.md ─► only the topic this task needs
+AGENTS.md ─► profile.md + workspace.md ─► project README ─► newest worklog entry
+          ─► segment open items + decisions + experiments ─► segment knowledge.md (Depends on, Traps)
+          ─► knowledge/INDEX.md only if something is still missing
+...work...
+session-close ─► worklog (Did / Next / Fixed / Unproven) ─► you approve ─► open items, knowledge.md, experiments
+weekly review ─► move ↑ lessons to the shared hub · flag unclosed sessions · overdue tests · archive old worklog
 ```
 
 Before analysis or a live change the agent loads `rules/analysis.md` or `rules/actions.md`.
@@ -266,9 +290,9 @@ AGENTS.md              always-on rules (≤60 lines)
 rules/                 setup · analysis · actions · memory — loaded when needed
 profile.example.md     how you like to work        → copied to profile.md at setup
 workspace.example.md   business, metrics, tools, permissions → copied to workspace.md
-projects/_template/    worklog + 4 tracking files per segment
-knowledge/             INDEX router, metrics, channels, universal learnings, inbox
-skills/                verify-number, self-check, fix-and-save-mistake, verification tests, weekly review
+projects/_template/    README (brief + read order) + worklog + per segment: open items, decisions, experiments, knowledge
+knowledge/             shared hub: INDEX router, measurement/ (metrics, verification), channels/, universal learnings, meta/
+skills/                session-close, weekly review, verify-number, self-check, fix-and-save-mistake, verification tests
 scripts/               next-id.sh (unique IDs) · validate.sh (structure check) · sql-lint.sh · recipe-check.sh · update.sh
 archive/               superseded records — kept, never default-loaded
 ```
@@ -278,7 +302,7 @@ archive/               superseded records — kept, never default-loaded
 ```bash
 scripts/next-id.sh D
 ```
-Prints the next free decision ID for the whole repo (also `O`, `E`, `C`, `K`).
+Prints the next free decision ID for the whole repo (also `O` open item, `E` experiment or hypothesis, `C` trap).
 
 ```bash
 scripts/validate.sh

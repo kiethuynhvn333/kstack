@@ -12,21 +12,22 @@ If `profile.md` or `workspace.md` is missing, or a task needs an answer they mar
 ## Start of every session
 9. Read `profile.md` and `workspace.md`. If a task depends on something still marked unknown, ask.
 10. Find the active project. If unclear, ask — or scan `open-items.md` across candidate projects.
-11. Read the newest entry in `projects/<project>/worklog.md`, then that project's
-    `<segment>/decisions.md` and `<segment>/open-items.md`. Only then open `knowledge/INDEX.md`
-    and load just the topic(s) this task needs.
+11. Read the project first, then the shared knowledge it points to: `projects/<p>/README.md` →
+    newest `worklog.md` entry for the segment → the segment's `open-items.md`, `decisions.md`,
+    `experiments.md` → its `knowledge.md` (the **Depends on** table names the shared files; check
+    its **Traps**). Open `knowledge/INDEX.md` only if something is still missing.
 12. Stop loading once you have enough. Never read everything "to be safe".
 
 ## What to trust
 13. Highest first: the user's latest explicit instruction; canonical files (`knowledge/`,
     `decisions.md`); recent worklog entries; skill outputs (`skills/*/runs/`) and references.
-14. Never treated as fact: `archive/`, `knowledge/meta/inbox.md`, drafts, hypotheses.
-15. If two canonical files disagree: stop, log it in `mistakes-and-learnings.md`, and ask the user.
+14. Never treated as fact: `archive/`, `Hypothesis` rows and test results in `experiments.md`, drafts.
+15. If two canonical files disagree: stop, ask the user, and log it as a Traps row in `knowledge.md`.
 
 ## How we work
 16. This repo is the memory. Save project facts as files here, not in an AI tool's built-in memory.
-17. Look before you dig: before hard analysis or recommending a live change, search the project's
-    decisions, experiments, mistakes-and-learnings, and `knowledge/channels/<platform>.md`.
+17. Look before you dig: before hard analysis or recommending a live change, search the segment's
+    decisions, experiments, `knowledge.md` Traps, and `knowledge/channels/<platform>.md`.
 18. Say what you checked: every recommendation names the files and rules you checked and what they said.
 19. Label every claim as fact (with source), estimate, or guess. A retry or "looks right" is not evidence.
 20. When the user corrects you, find the real cause, fix the source, and offer to save a regression
@@ -39,8 +40,8 @@ If `profile.md` or `workspace.md` is missing, or a task needs an answer they mar
   explicit authorization for that action and scope. New campaigns start paused.
 - 35. Read-only means read-only. No commit, push, publish, message, or recurring task without authorization.
 - 36. No credentials in project files. No real business data in public material.
-- 37–38. When writing is allowed, end every substantive session with a worklog entry, including
-  every external action and whether it was verified.
+- 37–38. When writing is allowed, end every substantive session with `skills/session-close/`:
+  worklog entry (every external action + whether verified), then knowledge proposals for approval.
   Then, in one bold line, remind the user nothing is backed up until they say "commit and push".
 
 ## Load when needed
@@ -50,8 +51,9 @@ If `profile.md` or `workspace.md` is missing, or a task needs an answer they mar
 | Analyze performance, compare periods, diagnose, plan or read a test | `rules/analysis.md` (22–29) |
 | Use a new tool, hit blocked access, or make any live change | `rules/actions.md` (30–36) |
 | Write to memory, end a session, or run a knowledge review | `rules/memory.md` (37–45) |
-| Share, report, or act on a fresh number | `skills/verify-number/` (tiers T0–T3, stamp; `knowledge/verification.md`) |
+| Share, report, or act on a fresh number | `skills/verify-number/` (tiers T0–T3, stamp; `knowledge/measurement/verification.md`) |
 | Log a mistake as a regression test / rerun saved tests | `skills/fix-and-save-mistake/`, `skills/run-verification-tests/` |
+| End a session ("wrap up", "done for today") | `skills/session-close/` |
 | Weekly knowledge review | `skills/weekly-knowledge-review/` |
 
 If your tool can't run skills, open the `SKILL.md` and follow it. Size limits (checked by
