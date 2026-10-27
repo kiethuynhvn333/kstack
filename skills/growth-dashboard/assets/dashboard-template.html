@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Growth Overview</title>
+<!--
+  Growth dashboard template (kstack skills/growth-dashboard). Follows references/ui-spec.md.
+  To use: replace the JSON inside <script id="dashboard-data"> below. For the standard layout nothing
+  else needs editing; extra charts or cards are added by hand following references/ui-spec.md.
+  As shipped, it holds SAMPLE data for a made-up marketplace (Northwind Market): open it to see the result.
+
+  DATA FORMAT
+  {
+    "title": "Growth Overview",            page title
+    "sample": false,                       true shows a "Sample — not your data" badge
+    "asOf": "2026-10-26",                  last date in the data
+    "grain": "month" | "week",             period ids: "YYYY-MM" or the Monday "YYYY-MM-DD"
+    "currency": "$",                       symbol put before money values
+    "segments": ["All", ...],              "All" first
+    "sources": [ {"id","name","group"} ],  in stack order; group e.g. "Paid", "Owned", "Organic";
+                                           mark the catch-all with "unlinked": true
+    "metrics": [ {"id","name","sub","phrase","format","good","perDay"} ]
+        phrase: optional words for the takeaway sentence, e.g. "buyers contacting a seller a day"
+        format: "int" | "money" (compact) | "money_full" | "percent" (0–1)
+        good:   "up" | "down" | "neutral"   (colors the change)
+        perDay: true for totals (leads, cost) so partial periods compare per day
+    "tileGroups":   [ {"label": "Volume", "metrics": ["id", ...]} ]       max 4 per group
+    "contribution": {"metric", "title", "note", "shareGroup"}             stacked bars; shareGroup
+                                           labels each bar with that group's share of Total
+    "efficiency":   {"metric", "sources": ["id" | "total"], "title", "note"}   lines
+    "funnel":       {"steps": ["id", ...], "title", "note"}               optional
+    "status":       {"metric", "efficiencyMetric", "threshold": 0.05, "title", "note"}
+    "table":        {"metrics": ["id", ...]}                              optional, default all
+    "notes": ["plain sentence", ...]
+    "rows": [ {"period", "segment", "source": "<id>" | "total", "days", "values": {"id": number|null}} ]
+        "total" rows come from raw data (people overlap across sources, so do not sum them)
+  }
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<style>
+  /* Layout: header → filters → tile groups → two chart cards → funnel → status → table → notes */
+  :root {
+    --bg: #f6f6f3; --panel: #ffffff; --line: #e3e2dd; --fg: #1c1c1a; --muted: #6a6964;
+    --ok: #1d7a4c; --bad: #b42318; --warn: #9a6700;
+    --grid: #ecebe6; --axis: #c8c7c1; --ref: #8c8b85; --series-muted: #bdbcb5; --skeleton: #ecebe6;
+    --s1: #2f6fd6; --s2: #d9822b; --s3: #7a5bd6; --s4: #1f9e89; --s5: #c94f7c; --s6: #8a9a2b; --s7: #4aa3c9; --s8: #a0522d;
+    --font-text: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-num: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --fs-caption: 12px; --fs-body: 14px; --fs-heading: 16px; --fs-title: 28px;
+    --g-xs: 4px; --g-sm: 8px; --g-md: 12px; --g-lg: 16px; --g-xl: 24px; --radius: 8px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #181817; --panel: #222220; --line: #353532; --fg: #ecebe6; --muted: #a4a39d;
+      --ok: #5cc48e; --bad: #f4776b; --warn: #e3b252;
+      --grid: #2c2c2a; --axis: #4b4b47; --ref: #8c8b85; --series-muted: #5b5a55; --skeleton: #2c2c2a;
+      --s1: #6f9ff2; --s2: #f2a65e; --s3: #a68ef2; --s4: #4fcab3; --s5: #e883aa; --s6: #b6c75d; --s7: #80c7e8; --s8: #d48a64;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #181817; --panel: #222220; --line: #353532; --fg: #ecebe6; --muted: #a4a39d;
+    --ok: #5cc48e; --bad: #f4776b; --warn: #e3b252;
+    --grid: #2c2c2a; --axis: #4b4b47; --ref: #8c8b85; --series-muted: #5b5a55; --skeleton: #2c2c2a;
+    --s1: #6f9ff2; --s2: #f2a65e; --s3: #a68ef2; --s4: #4fcab3; --s5: #e883aa; --s6: #b6c75d; --s7: #80c7e8; --s8: #d48a64;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-text); font-size: var(--fs-body); }
+  .gd { max-width: 1280px; margin: 0 auto; padding-block: var(--g-xl); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: var(--g-xl); }
+  .gd-head { display: grid; gap: var(--g-sm); }
+  .gd-title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--g-md); }
+  .gd-title { margin: 0; font-family: var(--font-num); font-weight: 400; font-size: 30px; text-wrap: balance; }
+  .gd-badge { font-size: var(--fs-caption); color: var(--warn); border: 1px solid var(--warn); border-radius: 999px; padding: 2px 10px; }
+  .gd-takeaway { margin: 0; color: var(--muted); max-width: 75ch; line-height: 1.55; }
+  .gd-takeaway b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .gd-filters { display: flex; flex-wrap: wrap; gap: var(--g-md); align-items: center; }
+  .gd-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+  .gd-seg button { appearance: none; border: 0; background: transparent; color: var(--muted); font: inherit; padding: 6px 14px; cursor: pointer; }
+  .gd-seg button + button { border-left: 1px solid var(--line); }
+  .gd-seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .gd-seg button:focus-visible, .gd-select:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .gd-select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 10px; }
+  .gd-fresh { margin-left: auto; color: var(--muted); font-size: var(--fs-caption); }
+  .gd-group { display: grid; gap: var(--g-sm); }
+  .gd-label { margin: 0; font-size: var(--fs-caption); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .gd-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--g-md); }
+  .gd-tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--g-lg); display: grid; gap: var(--g-xs); align-content: start; min-width: 0; }
+  .gd-tile-name { font-size: var(--fs-caption); color: var(--muted); }
+  .gd-tile-value { font-family: var(--font-num); font-size: var(--fs-title); line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .gd-chg { font-size: var(--fs-caption); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .is-good { color: var(--ok); } .is-bad { color: var(--bad); }
+  .gd-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--g-md); }
+  .gd-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--g-lg); display: grid; gap: var(--g-sm); align-content: start; min-width: 0; }
+  .gd-card h2 { margin: 0; font-size: var(--fs-heading); font-weight: 500; }
+  .gd-note { margin: 0; color: var(--muted); font-size: var(--fs-caption); line-height: 1.45; }
+  .gd-chart { position: relative; min-height: 260px; }
+  .gd-legend { display: flex; flex-wrap: wrap; gap: var(--g-sm) var(--g-md); font-size: var(--fs-caption); color: var(--muted); }
+  .gd-sw { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 2px; margin-right: 0.35rem; }
+  .gd-tip { position: absolute; pointer-events: none; z-index: 2; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,0.12); padding: 6px 10px; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; white-space: nowrap; display: grid; gap: 2px; }
+  .gd-tip-head { color: var(--muted); }
+  .gd-scroll { overflow: auto; max-height: 36rem; }
+  .gd-table { width: 100%; border-collapse: collapse; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
+  .gd-table th { position: sticky; top: 0; background: var(--panel); color: var(--muted); font-weight: 500; text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .gd-table td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .gd-table th:nth-child(-n+2), .gd-table td:nth-child(-n+2) { text-align: left; }
+  .gd-table tr.gd-total td { font-weight: 600; }
+  .gd-table tr.gd-sub td:first-child { color: var(--muted); }
+  .gd-pill { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: var(--fs-caption); border: 1px solid currentColor; }
+  .gd-pill.growing { color: var(--ok); } .gd-pill.declining { color: var(--bad); } .gd-pill.new { color: var(--warn); } .gd-pill.flat, .gd-pill.nodata { color: var(--muted); }
+  .gd-bar { display: inline-block; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 8px; }
+  .gd-share { display: inline-flex; align-items: center; justify-content: flex-end; min-width: 9rem; }
+  .gd-notes { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--g-xs); color: var(--muted); font-size: var(--fs-caption); line-height: 1.5; max-width: 90ch; }
+  .gd-empty { color: var(--muted); font-size: var(--fs-caption); }
+  .gd-skel { display: inline-block; width: 5rem; height: 1em; border-radius: 4px; background: var(--skeleton); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="gd">
+  <header class="gd-head" id="summary">
+    <div class="gd-title-row">
+      <h1 class="gd-title" id="page-title">Growth Overview</h1>
+      <span class="gd-badge" id="sample-badge" hidden>Sample — not your data</span>
+    </div>
+    <p class="gd-takeaway" id="takeaway"><span class="gd-skel"></span></p>
+  </header>
+
+  <div class="gd-filters" id="filters">
+    <div class="gd-seg" role="group" aria-label="Segment" id="segment-picker"></div>
+    <select class="gd-select" id="period-picker" aria-label="Period"></select>
+    <span class="gd-fresh" id="fresh"></span>
+  </div>
+
+  <div id="tile-groups" class="gd-head"></div>
+
+  <div class="gd-cards">
+    <section class="gd-card" id="contribution">
+      <h2 id="contribution-title"></h2>
+      <p class="gd-note" id="contribution-note"></p>
+      <div class="gd-legend" id="contribution-legend"></div>
+      <div class="gd-chart" id="contribution-chart"></div>
+    </section>
+    <section class="gd-card" id="efficiency">
+      <h2 id="efficiency-title"></h2>
+      <p class="gd-note" id="efficiency-note"></p>
+      <div class="gd-legend" id="efficiency-legend"></div>
+      <div class="gd-chart" id="efficiency-chart"></div>
+    </section>
+  </div>
+
+  <section class="gd-card" id="funnel" hidden>
+    <h2 id="funnel-title"></h2>
+    <p class="gd-note" id="funnel-note"></p>
+    <div class="gd-chart" id="funnel-chart" style="min-height: 0"></div>
+  </section>
+
+  <section class="gd-card" id="sources">
+    <h2 id="status-title"></h2>
+    <p class="gd-note" id="status-note"></p>
+    <div class="gd-scroll">
+      <table class="gd-table" id="status-table"><thead></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="gd-card" id="detail">
+    <h2 id="table-title"></h2>
+    <p class="gd-note">Every segment and source for the period picked above. Bold rows are totals.</p>
+    <div class="gd-scroll">
+      <table class="gd-table" id="detail-table"><thead></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="gd-card" id="notes">
+    <h2>How to read this</h2>
+    <ul class="gd-notes" id="notes-list"></ul>
+  </section>
+</div>
+
+<script id="dashboard-data" type="application/json">
+{"title":"Growth Overview","sample":true,"asOf":"2026-10-26","grain":"month","currency":"$","segments":["All","Electronics","Furniture","Fashion"],"sources":[{"id":"google","name":"Google Ads","group":"Paid"},{"id":"meta","name":"Meta Ads","group":"Paid"},{"id":"tiktok","name":"TikTok Ads","group":"Paid"},{"id":"email","name":"Email","group":"Owned"},{"id":"push","name":"Push","group":"Owned"},{"id":"seo","name":"SEO","group":"Organic"},{"id":"direct","name":"Direct","group":"Organic"},{"id":"not_linked","name":"Not linked","group":"Unknown","unlinked":true}],"metrics":[{"id":"dau","name":"DAU","sub":"active people per day","phrase":"active people a day","format":"int","good":"up"},{"id":"viewers","name":"Listing viewers","sub":"people who viewed a listing, per day","format":"int","good":"up"},{"id":"dwl","name":"Buyers with a lead","sub":"people who contacted a seller, per day","phrase":"buyers contacting a seller a day","format":"int","good":"up"},{"id":"leads","name":"Leads","sub":"contacts, period total","format":"int","good":"up","perDay":true},{"id":"cost","name":"Ad spend","sub":"period total","format":"money","good":"neutral","perDay":true},{"id":"cp_dwl","name":"Cost per buyer","sub":"daily spend \u00f7 buyers with a lead","format":"money_full","good":"down"},{"id":"cpl","name":"Cost per lead","sub":"spend \u00f7 leads","format":"money_full","good":"down"},{"id":"cr","name":"DAU \u2192 lead","sub":"buyers with a lead \u00f7 DAU","format":"percent","good":"up"}],"tileGroups":[{"label":"Volume","metrics":["dau","dwl","leads","cost"]},{"label":"Efficiency","metrics":["cp_dwl","cpl","cr"]}],"contribution":{"metric":"dwl","title":"Where buyers with a lead come from","note":"Buyers with a lead per day, by source. The label over each bar is the paid share of the total.","shareGroup":"Paid"},"efficiency":{"metric":"cp_dwl","sources":["google","meta","tiktok","total"],"title":"Cost per buyer with a lead, by paid source","note":"Daily ad spend \u00f7 buyers with a lead per day. Total is blended: all spend \u00f7 all buyers, organic included."},"funnel":{"steps":["dau","viewers","dwl"],"title":"From visit to contacting a seller","note":"People per day, all sources together, for the period picked above."},"status":{"metric":"dwl","efficiencyMetric":"cp_dwl","threshold":0.05,"title":"Status of each source of growth"},"notes":["Sample data for a made-up marketplace, Northwind Market. Not real numbers.","DAU, listing viewers and buyers with a lead are people per day, averaged over the period. Leads and ad spend are period totals.","Changes compare with the period before. Leads and spend are compared per day, so the current, partial period can be read before it ends.","Totals come from raw data. One person can arrive through two sources on the same day, so sources add up to more than the total.","\"Not linked\" is traffic whose source could not be matched. A large share means a tracking gap.","Cost figures cover paid sources only; email, push and organic sources have no cost here."],"rows":[{"period":"2026-05","segment":"Electronics","source":"google","days":31,"values":{"dau":4317,"viewers":2620,"dwl":613,"leads":58954,"cost":570869,"cp_dwl":30.02,"cpl":9.68,"cr":0.1421}},{"period":"2026-05","segment":"Furniture","source":"google","days":31,"values":{"dau":2953,"viewers":1816,"dwl":395,"leads":37969,"cost":390774,"cp_dwl":31.9,"cpl":10.29,"cr":0.1338}},{"period":"2026-05","segment":"Fashion","source":"google","days":31,"values":{"dau":2314,"viewers":1429,"dwl":310,"leads":29794,"cost":317507,"cp_dwl":33.04,"cpl":10.66,"cr":0.134}},{"period":"2026-05","segment":"All","source":"google","days":31,"values":{"dau":9296,"viewers":5689,"dwl":1278,"leads":126717,"cost":1279150,"cp_dwl":32.29,"cpl":10.09,"cr":0.1375}},{"period":"2026-05","segment":"Electronics","source":"meta","days":31,"values":{"dau":2765,"viewers":1353,"dwl":213,"leads":17156,"cost":329240,"cp_dwl":49.9,"cpl":19.19,"cr":0.077}},{"period":"2026-05","segment":"Furniture","source":"meta","days":31,"values":{"dau":1888,"viewers":931,"dwl":152,"leads":12271,"cost":221816,"cp_dwl":47.0,"cpl":18.08,"cr":0.0806}},{"period":"2026-05","segment":"Fashion","source":"meta","days":31,"values":{"dau":1639,"viewers":765,"dwl":136,"leads":10944,"cost":183652,"cp_dwl":43.63,"cpl":16.78,"cr":0.0829}},{"period":"2026-05","segment":"All","source":"meta","days":31,"values":{"dau":6103,"viewers":2958,"dwl":486,"leads":40371,"cost":734708,"cp_dwl":48.77,"cpl":18.2,"cr":0.0796}},{"period":"2026-05","segment":"Electronics","source":"email","days":31,"values":{"dau":905,"viewers":619,"dwl":160,"leads":16834,"cr":0.1766}},{"period":"2026-05","segment":"Furniture","source":"email","days":31,"values":{"dau":654,"viewers":449,"dwl":119,"leads":12507,"cr":0.1815}},{"period":"2026-05","segment":"Fashion","source":"email","days":31,"values":{"dau":534,"viewers":371,"dwl":97,"leads":10175,"cr":0.1809}},{"period":"2026-05","segment":"All","source":"email","days":31,"values":{"dau":2030,"viewers":1396,"dwl":365,"leads":39516,"cr":0.1798}},{"period":"2026-05","segment":"Electronics","source":"push","days":31,"values":{"dau":1279,"viewers":822,"dwl":149,"leads":13394,"cr":0.1165}},{"period":"2026-05","segment":"Furniture","source":"push","days":31,"values":{"dau":919,"viewers":604,"dwl":108,"leads":9735,"cr":0.1178}},{"period":"2026-05","segment":"Fashion","source":"push","days":31,"values":{"dau":758,"viewers":499,"dwl":89,"leads":8010,"cr":0.1176}},{"period":"2026-05","segment":"All","source":"push","days":31,"values":{"dau":2867,"viewers":1867,"dwl":336,"leads":31139,"cr":0.1172}},{"period":"2026-05","segment":"Electronics","source":"seo","days":31,"values":{"dau":5591,"viewers":3281,"dwl":599,"leads":55730,"cr":0.1072}},{"period":"2026-05","segment":"Furniture","source":"seo","days":31,"values":{"dau":3632,"viewers":2110,"dwl":415,"leads":38551,"cr":0.1141}},{"period":"2026-05","segment":"Fashion","source":"seo","days":31,"values":{"dau":3083,"viewers":1765,"dwl":355,"leads":33049,"cr":0.1153}},{"period":"2026-05","segment":"All","source":"seo","days":31,"values":{"dau":11937,"viewers":6941,"dwl":1328,"leads":127330,"cr":0.1113}},{"period":"2026-05","segment":"Electronics","source":"direct","days":31,"values":{"dau":6441,"viewers":4102,"dwl":859,"leads":87856,"cr":0.1333}},{"period":"2026-05","segment":"Furniture","source":"direct","days":31,"values":{"dau":4312,"viewers":2758,"dwl":535,"leads":54704,"cr":0.124}},{"period":"2026-05","segment":"Fashion","source":"direct","days":31,"values":{"dau":3826,"viewers":2487,"dwl":501,"leads":51249,"cr":0.1309}},{"period":"2026-05","segment":"All","source":"direct","days":31,"values":{"dau":14142,"viewers":9067,"dwl":1838,"leads":193809,"cr":0.13}},{"period":"2026-05","segment":"Electronics","source":"not_linked","days":31,"values":{"dau":517,"viewers":281,"dwl":63,"leads":5493,"cr":0.1223}},{"period":"2026-05","segment":"Furniture","source":"not_linked","days":31,"values":{"dau":334,"viewers":184,"dwl":40,"leads":3461,"cr":0.1195}},{"period":"2026-05","segment":"Fashion","source":"not_linked","days":31,"values":{"dau":286,"viewers":162,"dwl":34,"leads":2974,"cr":0.1197}},{"period":"2026-05","segment":"All","source":"not_linked","days":31,"values":{"dau":1103,"viewers":608,"dwl":133,"leads":11928,"cr":0.1206}},{"period":"2026-05","segment":"All","source":"total","days":31,"values":{"dau":45521,"viewers":27349,"dwl":5526,"leads":570810,"cost":2013858,"cp_dwl":11.76,"cpl":3.53,"cr":0.1214}},{"period":"2026-05","segment":"Electronics","source":"total","days":31,"values":{"dau":20724,"viewers":12424,"dwl":2523,"leads":255417,"cost":900109,"cp_dwl":11.51,"cpl":3.52,"cr":0.1217}},{"period":"2026-05","segment":"Furniture","source":"total","days":31,"values":{"dau":13957,"viewers":8409,"dwl":1676,"leads":169198,"cost":612590,"cp_dwl":11.79,"cpl":3.62,"cr":0.1201}},{"period":"2026-05","segment":"Fashion","source":"total","days":31,"values":{"dau":11818,"viewers":7104,"dwl":1446,"leads":146195,"cost":501159,"cp_dwl":11.18,"cpl":3.43,"cr":0.1224}},{"period":"2026-06","segment":"Electronics","source":"google","days":30,"values":{"dau":4635,"viewers":2798,"dwl":662,"leads":61557,"cost":585624,"cp_dwl":29.49,"cpl":9.51,"cr":0.1428}},{"period":"2026-06","segment":"Furniture","source":"google","days":30,"values":{"dau":3209,"viewers":2028,"dwl":440,"leads":40885,"cost":384348,"cp_dwl":29.14,"cpl":9.4,"cr":0.137}},{"period":"2026-06","segment":"Fashion","source":"google","days":30,"values":{"dau":2576,"viewers":1551,"dwl":359,"leads":33412,"cost":316077,"cp_dwl":29.33,"cpl":9.46,"cr":0.1395}},{"period":"2026-06","segment":"All","source":"google","days":30,"values":{"dau":10107,"viewers":6186,"dwl":1417,"leads":135854,"cost":1286049,"cp_dwl":30.25,"cpl":9.47,"cr":0.1402}},{"period":"2026-06","segment":"Electronics","source":"meta","days":30,"values":{"dau":2748,"viewers":1284,"dwl":226,"leads":17605,"cost":329994,"cp_dwl":48.73,"cpl":18.74,"cr":0.0821}},{"period":"2026-06","segment":"Furniture","source":"meta","days":30,"values":{"dau":1862,"viewers":888,"dwl":154,"leads":12049,"cost":219338,"cp_dwl":47.33,"cpl":18.2,"cr":0.083}},{"period":"2026-06","segment":"Fashion","source":"meta","days":30,"values":{"dau":1590,"viewers":766,"dwl":132,"leads":10304,"cost":191092,"cp_dwl":48.22,"cpl":18.55,"cr":0.0831}},{"period":"2026-06","segment":"All","source":"meta","days":30,"values":{"dau":6014,"viewers":2850,"dwl":497,"leads":39958,"cost":740424,"cp_dwl":49.66,"cpl":18.53,"cr":0.0826}},{"period":"2026-06","segment":"Electronics","source":"email","days":30,"values":{"dau":1080,"viewers":746,"dwl":193,"leads":19665,"cr":0.1785}},{"period":"2026-06","segment":"Furniture","source":"email","days":30,"values":{"dau":678,"viewers":486,"dwl":128,"leads":13024,"cr":0.1882}},{"period":"2026-06","segment":"Fashion","source":"email","days":30,"values":{"dau":551,"viewers":378,"dwl":97,"leads":9844,"cr":0.1752}},{"period":"2026-06","segment":"All","source":"email","days":30,"values":{"dau":2240,"viewers":1562,"dwl":405,"leads":42533,"cr":0.1808}},{"period":"2026-06","segment":"Electronics","source":"push","days":30,"values":{"dau":1329,"viewers":876,"dwl":161,"leads":13994,"cr":0.1211}},{"period":"2026-06","segment":"Furniture","source":"push","days":30,"values":{"dau":889,"viewers":569,"dwl":106,"leads":9205,"cr":0.119}},{"period":"2026-06","segment":"Fashion","source":"push","days":30,"values":{"dau":751,"viewers":497,"dwl":94,"leads":8191,"cr":0.1254}},{"period":"2026-06","segment":"All","source":"push","days":30,"values":{"dau":2880,"viewers":1884,"dwl":350,"leads":31390,"cr":0.1215}},{"period":"2026-06","segment":"Electronics","source":"seo","days":30,"values":{"dau":5662,"viewers":3287,"dwl":630,"leads":56708,"cr":0.1113}},{"period":"2026-06","segment":"Furniture","source":"seo","days":30,"values":{"dau":3768,"viewers":2127,"dwl":431,"leads":38794,"cr":0.1144}},{"period":"2026-06","segment":"Fashion","source":"seo","days":30,"values":{"dau":3178,"viewers":1885,"dwl":360,"leads":32403,"cr":0.1133}},{"period":"2026-06","segment":"All","source":"seo","days":30,"values":{"dau":12230,"viewers":7080,"dwl":1378,"leads":127905,"cr":0.1127}},{"period":"2026-06","segment":"Electronics","source":"direct","days":30,"values":{"dau":6707,"viewers":4267,"dwl":837,"leads":82900,"cr":0.1248}},{"period":"2026-06","segment":"Furniture","source":"direct","days":30,"values":{"dau":4603,"viewers":2869,"dwl":573,"leads":56678,"cr":0.1244}},{"period":"2026-06","segment":"Fashion","source":"direct","days":30,"values":{"dau":3643,"viewers":2284,"dwl":466,"leads":46136,"cr":0.1279}},{"period":"2026-06","segment":"All","source":"direct","days":30,"values":{"dau":14504,"viewers":9137,"dwl":1820,"leads":185714,"cr":0.1255}},{"period":"2026-06","segment":"Electronics","source":"not_linked","days":30,"values":{"dau":490,"viewers":261,"dwl":57,"leads":4764,"cr":0.1158}},{"period":"2026-06","segment":"Furniture","source":"not_linked","days":30,"values":{"dau":329,"viewers":179,"dwl":38,"leads":3154,"cr":0.1143}},{"period":"2026-06","segment":"Fashion","source":"not_linked","days":30,"values":{"dau":300,"viewers":166,"dwl":35,"leads":2922,"cr":0.1158}},{"period":"2026-06","segment":"All","source":"not_linked","days":30,"values":{"dau":1085,"viewers":588,"dwl":126,"leads":10840,"cr":0.1161}},{"period":"2026-06","segment":"All","source":"total","days":30,"values":{"dau":47038,"viewers":28079,"dwl":5746,"leads":574194,"cost":2026473,"cp_dwl":11.76,"cpl":3.53,"cr":0.1222}},{"period":"2026-06","segment":"Electronics","source":"total","days":30,"values":{"dau":21518,"viewers":12843,"dwl":2628,"leads":257193,"cost":915618,"cp_dwl":11.61,"cpl":3.56,"cr":0.1221}},{"period":"2026-06","segment":"Furniture","source":"total","days":30,"values":{"dau":14571,"viewers":8689,"dwl":1776,"leads":173789,"cost":603686,"cp_dwl":11.33,"cpl":3.47,"cr":0.1219}},{"period":"2026-06","segment":"Fashion","source":"total","days":30,"values":{"dau":11960,"viewers":7151,"dwl":1466,"leads":143212,"cost":507169,"cp_dwl":11.53,"cpl":3.54,"cr":0.1226}},{"period":"2026-07","segment":"Electronics","source":"google","days":31,"values":{"dau":4541,"viewers":2790,"dwl":627,"leads":60263,"cost":599910,"cp_dwl":30.86,"cpl":9.95,"cr":0.1381}},{"period":"2026-07","segment":"Furniture","source":"google","days":31,"values":{"dau":3251,"viewers":2075,"dwl":454,"leads":43585,"cost":408803,"cp_dwl":29.08,"cpl":9.38,"cr":0.1395}},{"period":"2026-07","segment":"Fashion","source":"google","days":31,"values":{"dau":2471,"viewers":1495,"dwl":340,"leads":32719,"cost":336187,"cp_dwl":31.85,"cpl":10.27,"cr":0.1378}},{"period":"2026-07","segment":"All","source":"google","days":31,"values":{"dau":9955,"viewers":6169,"dwl":1378,"leads":136567,"cost":1344900,"cp_dwl":31.48,"cpl":9.85,"cr":0.1384}},{"period":"2026-07","segment":"Electronics","source":"meta","days":31,"values":{"dau":2947,"viewers":1386,"dwl":225,"leads":18095,"cost":358187,"cp_dwl":51.47,"cpl":19.79,"cr":0.0762}},{"period":"2026-07","segment":"Furniture","source":"meta","days":31,"values":{"dau":1896,"viewers":891,"dwl":152,"leads":12281,"cost":225902,"cp_dwl":47.83,"cpl":18.39,"cr":0.0803}},{"period":"2026-07","segment":"Fashion","source":"meta","days":31,"values":{"dau":1580,"viewers":780,"dwl":131,"leads":10560,"cost":196031,"cp_dwl":48.26,"cpl":18.56,"cr":0.0829}},{"period":"2026-07","segment":"All","source":"meta","days":31,"values":{"dau":6230,"viewers":2965,"dwl":493,"leads":40936,"cost":780120,"cp_dwl":51.04,"cpl":19.06,"cr":0.0791}},{"period":"2026-07","segment":"Electronics","source":"email","days":31,"values":{"dau":1136,"viewers":789,"dwl":198,"leads":20843,"cr":0.174}},{"period":"2026-07","segment":"Furniture","source":"email","days":31,"values":{"dau":805,"viewers":565,"dwl":149,"leads":15707,"cr":0.185}},{"period":"2026-07","segment":"Fashion","source":"email","days":31,"values":{"dau":637,"viewers":438,"dwl":118,"leads":12456,"cr":0.1856}},{"period":"2026-07","segment":"All","source":"email","days":31,"values":{"dau":2501,"viewers":1738,"dwl":451,"leads":49006,"cr":0.1803}},{"period":"2026-07","segment":"Electronics","source":"push","days":31,"values":{"dau":1405,"viewers":947,"dwl":174,"leads":15618,"cr":0.1237}},{"period":"2026-07","segment":"Furniture","source":"push","days":31,"values":{"dau":919,"viewers":615,"dwl":107,"leads":9641,"cr":0.1167}},{"period":"2026-07","segment":"Fashion","source":"push","days":31,"values":{"dau":739,"viewers":484,"dwl":85,"leads":7597,"cr":0.1143}},{"period":"2026-07","segment":"All","source":"push","days":31,"values":{"dau":2971,"viewers":1985,"dwl":355,"leads":32856,"cr":0.1195}},{"period":"2026-07","segment":"Electronics","source":"seo","days":31,"values":{"dau":5391,"viewers":3086,"dwl":579,"leads":53824,"cr":0.1074}},{"period":"2026-07","segment":"Furniture","source":"seo","days":31,"values":{"dau":3898,"viewers":2323,"dwl":427,"leads":39666,"cr":0.1094}},{"period":"2026-07","segment":"Fashion","source":"seo","days":31,"values":{"dau":3342,"viewers":1995,"dwl":384,"leads":35739,"cr":0.115}},{"period":"2026-07","segment":"All","source":"seo","days":31,"values":{"dau":12252,"viewers":7182,"dwl":1348,"leads":129229,"cr":0.11}},{"period":"2026-07","segment":"Electronics","source":"direct","days":31,"values":{"dau":6596,"viewers":4151,"dwl":834,"leads":85325,"cr":0.1264}},{"period":"2026-07","segment":"Furniture","source":"direct","days":31,"values":{"dau":4307,"viewers":2708,"dwl":567,"leads":57994,"cr":0.1316}},{"period":"2026-07","segment":"Fashion","source":"direct","days":31,"values":{"dau":3904,"viewers":2550,"dwl":506,"leads":51812,"cr":0.1297}},{"period":"2026-07","segment":"All","source":"direct","days":31,"values":{"dau":14363,"viewers":9127,"dwl":1850,"leads":195131,"cr":0.1288}},{"period":"2026-07","segment":"Electronics","source":"not_linked","days":31,"values":{"dau":550,"viewers":308,"dwl":63,"leads":5490,"cr":0.115}},{"period":"2026-07","segment":"Furniture","source":"not_linked","days":31,"values":{"dau":367,"viewers":207,"dwl":45,"leads":3930,"cr":0.1234}},{"period":"2026-07","segment":"Fashion","source":"not_linked","days":31,"values":{"dau":309,"viewers":170,"dwl":36,"leads":3115,"cr":0.1161}},{"period":"2026-07","segment":"All","source":"not_linked","days":31,"values":{"dau":1189,"viewers":664,"dwl":140,"leads":12535,"cr":0.1177}},{"period":"2026-07","segment":"All","source":"total","days":31,"values":{"dau":47422,"viewers":28600,"dwl":5767,"leads":596260,"cost":2125020,"cp_dwl":11.89,"cpl":3.56,"cr":0.1216}},{"period":"2026-07","segment":"Electronics","source":"total","days":31,"values":{"dau":21438,"viewers":12784,"dwl":2565,"leads":259458,"cost":958097,"cp_dwl":12.05,"cpl":3.69,"cr":0.1196}},{"period":"2026-07","segment":"Furniture","source":"total","days":31,"values":{"dau":14671,"viewers":8915,"dwl":1806,"leads":182804,"cost":634705,"cp_dwl":11.34,"cpl":3.47,"cr":0.1231}},{"period":"2026-07","segment":"Fashion","source":"total","days":31,"values":{"dau":12333,"viewers":7516,"dwl":1520,"leads":153998,"cost":532218,"cp_dwl":11.29,"cpl":3.46,"cr":0.1232}},{"period":"2026-08","segment":"Electronics","source":"google","days":31,"values":{"dau":4749,"viewers":2915,"dwl":685,"leads":65819,"cost":652687,"cp_dwl":30.74,"cpl":9.92,"cr":0.1442}},{"period":"2026-08","segment":"Furniture","source":"google","days":31,"values":{"dau":3022,"viewers":1862,"dwl":442,"leads":42471,"cost":428857,"cp_dwl":31.3,"cpl":10.1,"cr":0.1463}},{"period":"2026-08","segment":"Fashion","source":"google","days":31,"values":{"dau":2449,"viewers":1484,"dwl":331,"leads":31800,"cost":361191,"cp_dwl":35.21,"cpl":11.36,"cr":0.1351}},{"period":"2026-08","segment":"All","source":"google","days":31,"values":{"dau":9913,"viewers":6073,"dwl":1414,"leads":140090,"cost":1442735,"cp_dwl":32.91,"cpl":10.3,"cr":0.1426}},{"period":"2026-08","segment":"Electronics","source":"meta","days":31,"values":{"dau":2426,"viewers":1140,"dwl":200,"leads":16154,"cost":344448,"cp_dwl":55.44,"cpl":21.32,"cr":0.0826}},{"period":"2026-08","segment":"Furniture","source":"meta","days":31,"values":{"dau":1589,"viewers":756,"dwl":128,"leads":10299,"cost":218258,"cp_dwl":55.1,"cpl":21.19,"cr":0.0804}},{"period":"2026-08","segment":"Fashion","source":"meta","days":31,"values":{"dau":1224,"viewers":604,"dwl":99,"leads":8012,"cost":186297,"cp_dwl":60.46,"cpl":23.25,"cr":0.0812}},{"period":"2026-08","segment":"All","source":"meta","days":31,"values":{"dau":5082,"viewers":2425,"dwl":414,"leads":34465,"cost":749003,"cp_dwl":58.36,"cpl":21.73,"cr":0.0815}},{"period":"2026-08","segment":"Electronics","source":"email","days":31,"values":{"dau":1373,"viewers":957,"dwl":256,"leads":27015,"cr":0.1867}},{"period":"2026-08","segment":"Furniture","source":"email","days":31,"values":{"dau":904,"viewers":622,"dwl":159,"leads":16726,"cr":0.1755}},{"period":"2026-08","segment":"Fashion","source":"email","days":31,"values":{"dau":707,"viewers":487,"dwl":128,"leads":13529,"cr":0.1816}},{"period":"2026-08","segment":"All","source":"email","days":31,"values":{"dau":2894,"viewers":2004,"dwl":527,"leads":57270,"cr":0.1821}},{"period":"2026-08","segment":"Electronics","source":"push","days":31,"values":{"dau":1311,"viewers":861,"dwl":152,"leads":13621,"cr":0.1156}},{"period":"2026-08","segment":"Furniture","source":"push","days":31,"values":{"dau":944,"viewers":618,"dwl":113,"leads":10144,"cr":0.1195}},{"period":"2026-08","segment":"Fashion","source":"push","days":31,"values":{"dau":758,"viewers":512,"dwl":90,"leads":8107,"cr":0.119}},{"period":"2026-08","segment":"All","source":"push","days":31,"values":{"dau":2923,"viewers":1931,"dwl":344,"leads":31872,"cr":0.1177}},{"period":"2026-08","segment":"Electronics","source":"seo","days":31,"values":{"dau":6190,"viewers":3591,"dwl":683,"leads":63530,"cr":0.1104}},{"period":"2026-08","segment":"Furniture","source":"seo","days":31,"values":{"dau":3941,"viewers":2220,"dwl":431,"leads":40076,"cr":0.1093}},{"period":"2026-08","segment":"Fashion","source":"seo","days":31,"values":{"dau":3150,"viewers":1773,"dwl":357,"leads":33193,"cr":0.1133}},{"period":"2026-08","segment":"All","source":"seo","days":31,"values":{"dau":12883,"viewers":7356,"dwl":1427,"leads":136799,"cr":0.1108}},{"period":"2026-08","segment":"Electronics","source":"direct","days":31,"values":{"dau":6571,"viewers":4199,"dwl":873,"leads":89356,"cr":0.1329}},{"period":"2026-08","segment":"Furniture","source":"direct","days":31,"values":{"dau":4591,"viewers":2908,"dwl":598,"leads":61166,"cr":0.1302}},{"period":"2026-08","segment":"Fashion","source":"direct","days":31,"values":{"dau":3825,"viewers":2490,"dwl":478,"leads":48869,"cr":0.1249}},{"period":"2026-08","segment":"All","source":"direct","days":31,"values":{"dau":14537,"viewers":9309,"dwl":1891,"leads":199391,"cr":0.1301}},{"period":"2026-08","segment":"Electronics","source":"not_linked","days":31,"values":{"dau":567,"viewers":307,"dwl":66,"leads":5770,"cr":0.1173}},{"period":"2026-08","segment":"Furniture","source":"not_linked","days":31,"values":{"dau":387,"viewers":213,"dwl":47,"leads":4059,"cr":0.1207}},{"period":"2026-08","segment":"Fashion","source":"not_linked","days":31,"values":{"dau":322,"viewers":182,"dwl":38,"leads":3338,"cr":0.1193}},{"period":"2026-08","segment":"All","source":"not_linked","days":31,"values":{"dau":1238,"viewers":681,"dwl":146,"leads":13167,"cr":0.1179}},{"period":"2026-08","segment":"All","source":"total","days":31,"values":{"dau":47430,"viewers":28552,"dwl":5909,"leads":613054,"cost":2191738,"cp_dwl":11.97,"cpl":3.58,"cr":0.1246}},{"period":"2026-08","segment":"Electronics","source":"total","days":31,"values":{"dau":22028,"viewers":13272,"dwl":2769,"leads":281265,"cost":997135,"cp_dwl":11.62,"cpl":3.55,"cr":0.1257}},{"period":"2026-08","segment":"Furniture","source":"total","days":31,"values":{"dau":14609,"viewers":8739,"dwl":1822,"leads":184941,"cost":647115,"cp_dwl":11.46,"cpl":3.5,"cr":0.1247}},{"period":"2026-08","segment":"Fashion","source":"total","days":31,"values":{"dau":11813,"viewers":7155,"dwl":1445,"leads":146848,"cost":547488,"cp_dwl":12.22,"cpl":3.73,"cr":0.1223}},{"period":"2026-09","segment":"Electronics","source":"google","days":30,"values":{"dau":4698,"viewers":2913,"dwl":658,"leads":61237,"cost":641837,"cp_dwl":32.49,"cpl":10.48,"cr":0.1402}},{"period":"2026-09","segment":"Furniture","source":"google","days":30,"values":{"dau":3072,"viewers":1909,"dwl":429,"leads":39914,"cost":434205,"cp_dwl":33.72,"cpl":10.88,"cr":0.1397}},{"period":"2026-09","segment":"Fashion","source":"google","days":30,"values":{"dau":2637,"viewers":1672,"dwl":385,"leads":35846,"cost":347415,"cp_dwl":30.04,"cpl":9.69,"cr":0.1462}},{"period":"2026-09","segment":"All","source":"google","days":30,"values":{"dau":10095,"viewers":6299,"dwl":1428,"leads":136997,"cost":1423457,"cp_dwl":33.23,"cpl":10.39,"cr":0.1415}},{"period":"2026-09","segment":"Electronics","source":"meta","days":30,"values":{"dau":2085,"viewers":1027,"dwl":172,"leads":13451,"cost":323549,"cp_dwl":62.54,"cpl":24.05,"cr":0.0827}},{"period":"2026-09","segment":"Furniture","source":"meta","days":30,"values":{"dau":1317,"viewers":630,"dwl":101,"leads":7869,"cost":217069,"cp_dwl":71.72,"cpl":27.59,"cr":0.0766}},{"period":"2026-09","segment":"Fashion","source":"meta","days":30,"values":{"dau":1091,"viewers":529,"dwl":90,"leads":7002,"cost":188127,"cp_dwl":69.86,"cpl":26.87,"cr":0.0823}},{"period":"2026-09","segment":"All","source":"meta","days":30,"values":{"dau":4358,"viewers":2120,"dwl":352,"leads":28322,"cost":728745,"cp_dwl":69.01,"cpl":25.73,"cr":0.0808}},{"period":"2026-09","segment":"Electronics","source":"tiktok","days":30,"values":{"dau":388,"viewers":157,"dwl":20,"leads":1302,"cost":92476,"cp_dwl":156.3,"cpl":71.05,"cr":0.0508}},{"period":"2026-09","segment":"Furniture","source":"tiktok","days":30,"values":{"dau":282,"viewers":116,"dwl":14,"leads":906,"cost":64710,"cp_dwl":157.17,"cpl":71.44,"cr":0.0486}},{"period":"2026-09","segment":"Fashion","source":"tiktok","days":30,"values":{"dau":222,"viewers":89,"dwl":12,"leads":769,"cost":53547,"cp_dwl":153.12,"cpl":69.6,"cr":0.0524}},{"period":"2026-09","segment":"All","source":"tiktok","days":30,"values":{"dau":865,"viewers":351,"dwl":45,"leads":2977,"cost":210733,"cp_dwl":156.1,"cpl":70.79,"cr":0.052}},{"period":"2026-09","segment":"Electronics","source":"email","days":30,"values":{"dau":1382,"viewers":963,"dwl":249,"leads":25404,"cr":0.1803}},{"period":"2026-09","segment":"Furniture","source":"email","days":30,"values":{"dau":941,"viewers":647,"dwl":166,"leads":16972,"cr":0.1767}},{"period":"2026-09","segment":"Fashion","source":"email","days":30,"values":{"dau":821,"viewers":558,"dwl":149,"leads":15161,"cr":0.181}},{"period":"2026-09","segment":"All","source":"email","days":30,"values":{"dau":3050,"viewers":2103,"dwl":547,"leads":57537,"cr":0.1793}},{"period":"2026-09","segment":"Electronics","source":"push","days":30,"values":{"dau":1349,"viewers":865,"dwl":159,"leads":13849,"cr":0.118}},{"period":"2026-09","segment":"Furniture","source":"push","days":30,"values":{"dau":919,"viewers":607,"dwl":106,"leads":9181,"cr":0.1148}},{"period":"2026-09","segment":"Fashion","source":"push","days":30,"values":{"dau":799,"viewers":536,"dwl":100,"leads":8734,"cr":0.1257}},{"period":"2026-09","segment":"All","source":"push","days":30,"values":{"dau":2975,"viewers":1948,"dwl":354,"leads":31764,"cr":0.119}},{"period":"2026-09","segment":"Electronics","source":"seo","days":30,"values":{"dau":5830,"viewers":3334,"dwl":612,"leads":55057,"cr":0.1049}},{"period":"2026-09","segment":"Furniture","source":"seo","days":30,"values":{"dau":4217,"viewers":2412,"dwl":447,"leads":40198,"cr":0.1059}},{"period":"2026-09","segment":"Fashion","source":"seo","days":30,"values":{"dau":3368,"viewers":2002,"dwl":382,"leads":34410,"cr":0.1135}},{"period":"2026-09","segment":"All","source":"seo","days":30,"values":{"dau":13013,"viewers":7516,"dwl":1398,"leads":129665,"cr":0.1074}},{"period":"2026-09","segment":"Electronics","source":"direct","days":30,"values":{"dau":6686,"viewers":4189,"dwl":906,"leads":89650,"cr":0.1354}},{"period":"2026-09","segment":"Furniture","source":"direct","days":30,"values":{"dau":4629,"viewers":2998,"dwl":577,"leads":57128,"cr":0.1247}},{"period":"2026-09","segment":"Fashion","source":"direct","days":30,"values":{"dau":3622,"viewers":2344,"dwl":467,"leads":46266,"cr":0.129}},{"period":"2026-09","segment":"All","source":"direct","days":30,"values":{"dau":14489,"viewers":9245,"dwl":1892,"leads":193044,"cr":0.1306}},{"period":"2026-09","segment":"Electronics","source":"not_linked","days":30,"values":{"dau":555,"viewers":313,"dwl":67,"leads":5669,"cr":0.1216}},{"period":"2026-09","segment":"Furniture","source":"not_linked","days":30,"values":{"dau":404,"viewers":217,"dwl":50,"leads":4219,"cr":0.1243}},{"period":"2026-09","segment":"Fashion","source":"not_linked","days":30,"values":{"dau":308,"viewers":173,"dwl":37,"leads":3091,"cr":0.1194}},{"period":"2026-09","segment":"All","source":"not_linked","days":30,"values":{"dau":1229,"viewers":682,"dwl":149,"leads":12979,"cr":0.1212}},{"period":"2026-09","segment":"All","source":"total","days":30,"values":{"dau":48008,"viewers":29016,"dwl":5910,"leads":593285,"cost":2362935,"cp_dwl":13.33,"cpl":3.98,"cr":0.1231}},{"period":"2026-09","segment":"Electronics","source":"total","days":30,"values":{"dau":21824,"viewers":13073,"dwl":2701,"leads":265619,"cost":1057862,"cp_dwl":13.06,"cpl":3.98,"cr":0.1238}},{"period":"2026-09","segment":"Furniture","source":"total","days":30,"values":{"dau":14992,"viewers":9059,"dwl":1796,"leads":176387,"cost":715984,"cp_dwl":13.29,"cpl":4.06,"cr":0.1198}},{"period":"2026-09","segment":"Fashion","source":"total","days":30,"values":{"dau":12225,"viewers":7508,"dwl":1541,"leads":151279,"cost":589089,"cp_dwl":12.74,"cpl":3.89,"cr":0.1261}},{"period":"2026-10","segment":"Electronics","source":"google","days":26,"values":{"dau":4634,"viewers":2882,"dwl":676,"leads":54519,"cost":559546,"cp_dwl":31.82,"cpl":10.26,"cr":0.146}},{"period":"2026-10","segment":"Furniture","source":"google","days":26,"values":{"dau":3010,"viewers":1869,"dwl":410,"leads":33075,"cost":369435,"cp_dwl":34.63,"cpl":11.17,"cr":0.1363}},{"period":"2026-10","segment":"Fashion","source":"google","days":26,"values":{"dau":2518,"viewers":1519,"dwl":342,"leads":27570,"cost":311694,"cp_dwl":35.05,"cpl":11.31,"cr":0.1358}},{"period":"2026-10","segment":"All","source":"google","days":26,"values":{"dau":9857,"viewers":6082,"dwl":1385,"leads":115164,"cost":1240675,"cp_dwl":34.45,"cpl":10.77,"cr":0.1405}},{"period":"2026-10","segment":"Electronics","source":"meta","days":26,"values":{"dau":1890,"viewers":921,"dwl":148,"leads":10005,"cost":292502,"cp_dwl":76.01,"cpl":29.24,"cr":0.0783}},{"period":"2026-10","segment":"Furniture","source":"meta","days":26,"values":{"dau":1240,"viewers":590,"dwl":94,"leads":6384,"cost":192080,"cp_dwl":78.23,"cpl":30.09,"cr":0.0761}},{"period":"2026-10","segment":"Fashion","source":"meta","days":26,"values":{"dau":1012,"viewers":493,"dwl":81,"leads":5503,"cost":159472,"cp_dwl":75.34,"cpl":28.98,"cr":0.0804}},{"period":"2026-10","segment":"All","source":"meta","days":26,"values":{"dau":4018,"viewers":1944,"dwl":313,"leads":21892,"cost":644054,"cp_dwl":79.14,"cpl":29.42,"cr":0.0779}},{"period":"2026-10","segment":"Electronics","source":"tiktok","days":26,"values":{"dau":628,"viewers":258,"dwl":30,"leads":1726,"cost":107315,"cp_dwl":136.82,"cpl":62.19,"cr":0.048}},{"period":"2026-10","segment":"Furniture","source":"tiktok","days":26,"values":{"dau":417,"viewers":167,"dwl":22,"leads":1231,"cost":69750,"cp_dwl":124.62,"cpl":56.65,"cr":0.0517}},{"period":"2026-10","segment":"Fashion","source":"tiktok","days":26,"values":{"dau":350,"viewers":142,"dwl":18,"leads":1050,"cost":57948,"cp_dwl":121.4,"cpl":55.18,"cr":0.0524}},{"period":"2026-10","segment":"All","source":"tiktok","days":26,"values":{"dau":1353,"viewers":550,"dwl":68,"leads":4007,"cost":235013,"cp_dwl":132.93,"cpl":58.65,"cr":0.0503}},{"period":"2026-10","segment":"Electronics","source":"email","days":26,"values":{"dau":1638,"viewers":1161,"dwl":299,"leads":26415,"cr":0.1824}},{"period":"2026-10","segment":"Furniture","source":"email","days":26,"values":{"dau":1038,"viewers":720,"dwl":179,"leads":15781,"cr":0.172}},{"period":"2026-10","segment":"Fashion","source":"email","days":26,"values":{"dau":836,"viewers":570,"dwl":154,"leads":13625,"cr":0.1843}},{"period":"2026-10","segment":"All","source":"email","days":26,"values":{"dau":3407,"viewers":2377,"dwl":613,"leads":55821,"cr":0.1799}},{"period":"2026-10","segment":"Electronics","source":"push","days":26,"values":{"dau":1302,"viewers":842,"dwl":150,"leads":11288,"cr":0.115}},{"period":"2026-10","segment":"Furniture","source":"push","days":26,"values":{"dau":931,"viewers":628,"dwl":114,"leads":8564,"cr":0.122}},{"period":"2026-10","segment":"Fashion","source":"push","days":26,"values":{"dau":726,"viewers":471,"dwl":85,"leads":6429,"cr":0.1175}},{"period":"2026-10","segment":"All","source":"push","days":26,"values":{"dau":2870,"viewers":1883,"dwl":339,"leads":26281,"cr":0.1181}},{"period":"2026-10","segment":"Electronics","source":"seo","days":26,"values":{"dau":6269,"viewers":3562,"dwl":686,"leads":53500,"cr":0.1094}},{"period":"2026-10","segment":"Furniture","source":"seo","days":26,"values":{"dau":4081,"viewers":2432,"dwl":470,"leads":36667,"cr":0.1152}},{"period":"2026-10","segment":"Fashion","source":"seo","days":26,"values":{"dau":3520,"viewers":2010,"dwl":405,"leads":31606,"cr":0.1151}},{"period":"2026-10","segment":"All","source":"seo","days":26,"values":{"dau":13454,"viewers":7764,"dwl":1514,"leads":121773,"cr":0.1125}},{"period":"2026-10","segment":"Electronics","source":"direct","days":26,"values":{"dau":6772,"viewers":4297,"dwl":836,"leads":71762,"cr":0.1235}},{"period":"2026-10","segment":"Furniture","source":"direct","days":26,"values":{"dau":4554,"viewers":2910,"dwl":592,"leads":50814,"cr":0.13}},{"period":"2026-10","segment":"Fashion","source":"direct","days":26,"values":{"dau":3712,"viewers":2376,"dwl":459,"leads":39352,"cr":0.1236}},{"period":"2026-10","segment":"All","source":"direct","days":26,"values":{"dau":14587,"viewers":9296,"dwl":1830,"leads":161928,"cr":0.1255}},{"period":"2026-10","segment":"Electronics","source":"not_linked","days":26,"values":{"dau":590,"viewers":317,"dwl":70,"leads":5105,"cr":0.1188}},{"period":"2026-10","segment":"Furniture","source":"not_linked","days":26,"values":{"dau":383,"viewers":204,"dwl":45,"leads":3278,"cr":0.1177}},{"period":"2026-10","segment":"Fashion","source":"not_linked","days":26,"values":{"dau":327,"viewers":181,"dwl":39,"leads":2862,"cr":0.1204}},{"period":"2026-10","segment":"All","source":"not_linked","days":26,"values":{"dau":1261,"viewers":681,"dwl":149,"leads":11245,"cr":0.1182}},{"period":"2026-10","segment":"All","source":"total","days":26,"values":{"dau":48712,"viewers":29315,"dwl":5956,"leads":518111,"cost":2119742,"cp_dwl":13.69,"cpl":4.09,"cr":0.1223}},{"period":"2026-10","segment":"Electronics","source":"total","days":26,"values":{"dau":22537,"viewers":13528,"dwl":2750,"leads":234320,"cost":959363,"cp_dwl":13.42,"cpl":4.09,"cr":0.122}},{"period":"2026-10","segment":"Furniture","source":"total","days":26,"values":{"dau":14871,"viewers":9044,"dwl":1830,"leads":155794,"cost":631265,"cp_dwl":13.27,"cpl":4.05,"cr":0.1231}},{"period":"2026-10","segment":"Fashion","source":"total","days":26,"values":{"dau":12351,"viewers":7374,"dwl":1504,"leads":127997,"cost":529114,"cp_dwl":13.53,"cpl":4.13,"cr":0.1218}}]}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('dashboard-data').textContent);
+  const $ = (id) => document.getElementById(id);
+  const TOTAL = 'total';
+  const metric = Object.fromEntries(D.metrics.map((m) => [m.id, m]));
+  const source = Object.fromEntries(D.sources.map((s, i) => [s.id, { ...s, i }]));
+  const cur = D.currency || '$';
+  const state = { segment: D.segments[0], period: null };
+
+  // ---------- formatting ----------
+  const fInt = d3.format(',.0f');
+  const fmt = (id, v) => {
+    if (v == null || Number.isNaN(v)) return '—';
+    const f = metric[id]?.format || 'int';
+    if (f === 'percent') return d3.format('.1%')(v);
+    if (f === 'money_full') return cur + (Math.abs(v) < 100 ? d3.format(',.2f')(v) : fInt(v));
+    if (f === 'money') {
+      const a = Math.abs(v);
+      if (a >= 1e9) return cur + d3.format(',.2f')(v / 1e9) + 'B';
+      if (a >= 1e6) return cur + d3.format(',.2f')(v / 1e6) + 'M';
+      return cur + fInt(v);
+    }
+    return fInt(v);
+  };
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const colorOf = (id) => (id === TOTAL ? css('--fg') : source[id]?.unlinked ? css('--series-muted') : css(`--s${(source[id].i % 8) + 1}`));
+  const nameOf = (id) => (id === TOTAL ? 'Total' : source[id]?.name || id);
+
+  // ---------- periods ----------
+  const isMonth = D.grain !== 'week';
+  const pDate = (p) => new Date((isMonth ? p + '-01' : p) + 'T00:00:00Z');
+  const pLen = (p) => { if (!isMonth) return 7; const d = pDate(p); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate(); };
+  const pName = (p) => (isMonth ? d3.utcFormat('%b %Y')(pDate(p)) : 'Week of ' + d3.utcFormat('%-d %b %Y')(pDate(p)));
+  const pShort = (p, narrow) => (isMonth ? d3.utcFormat(narrow ? '%b' : '%b %y')(pDate(p)) : d3.utcFormat('%-d %b')(pDate(p)));
+  const days = (p, seg) => get(p, seg || 'All', TOTAL)?.days ?? pLen(p);
+  const pLabel = (p) => { const n = days(p); return n < pLen(p) ? `${pName(p)} (${isMonth ? '1–' + n : n + ' days'})` : pName(p); };
+
+  // ---------- data access ----------
+  const idx = new Map(D.rows.map((r) => [`${r.period}|${r.segment}|${r.source}`, r]));
+  const get = (p, seg, src) => idx.get(`${p}|${seg}|${src}`);
+  const val = (p, seg, src, m) => { const r = get(p, seg, src); const v = r?.values?.[m]; return v == null ? null : Number(v); };
+  const periods = [...new Set(D.rows.map((r) => r.period))].sort();
+  const prevOf = (p) => periods[periods.indexOf(p) - 1];
+  const change = (p, seg, src, m) => {
+    const q = prevOf(p); if (!q) return null;
+    let a = val(p, seg, src, m), b = val(q, seg, src, m);
+    if (a == null || b == null) return null;
+    if (metric[m]?.format === 'percent') return { pts: a - b };
+    if (metric[m]?.perDay) { a /= days(p, seg); b /= days(q, seg); }
+    if (b === 0) return null;
+    return { pct: a / b - 1 };
+  };
+  const chgText = (c) => (c == null ? '' : c.pts != null ? d3.format('+.1f')(c.pts * 100) + ' pts' : d3.format('+.1%')(c.pct));
+  const chgClass = (c, m) => {
+    if (c == null) return '';
+    const x = c.pts != null ? c.pts : c.pct, small = c.pts != null ? 0.0005 : 0.005;
+    const good = metric[m]?.good || 'up';
+    if (Math.abs(x) < small || good === 'neutral') return '';
+    return (x > 0) === (good === 'up') ? 'is-good' : 'is-bad';
+  };
+
+  // ---------- shared chart helpers ----------
+  const legend = (host, ids) => host.replaceChildren(...ids.map((id) => {
+    const s = document.createElement('span'), w = document.createElement('span');
+    w.className = 'gd-sw'; w.style.background = colorOf(id);
+    s.append(w, nameOf(id)); return s;
+  }));
+  const tipFor = (host) => {
+    let t = host.querySelector('.gd-tip');
+    if (!t) { t = document.createElement('div'); t.className = 'gd-tip'; t.hidden = true; host.appendChild(t); }
+    return t;
+  };
+  const showTip = (host, t, event, head, lines) => {
+    const h = document.createElement('div'); h.className = 'gd-tip-head'; h.textContent = head;
+    t.replaceChildren(h, ...lines.map(([label, value, color]) => {
+      const r = document.createElement('div');
+      if (color) { const w = document.createElement('span'); w.className = 'gd-sw'; w.style.background = color; r.appendChild(w); }
+      r.append(`${label}: ${value}`); return r;
+    }));
+    t.hidden = false;
+    const [x, y] = d3.pointer(event, host);
+    t.style.left = Math.max(0, Math.min(host.clientWidth - t.offsetWidth, x + 12)) + 'px';
+    t.style.top = Math.max(0, Math.min(host.clientHeight - t.offsetHeight, y - 10)) + 'px';
+  };
+  const measure = (svg, texts) => {
+    const g = svg.append('g').style('font-size', 'var(--fs-caption)');
+    const w = d3.max(texts, (s) => g.append('text').text(s).node().getComputedTextLength()) || 0;
+    g.remove(); return w;
+  };
+  const caption = (sel) => sel.style('fill', 'var(--muted)').style('font-size', 'var(--fs-caption)');
+  const newSvg = (host, H, label) => {
+    host.querySelectorAll('svg, .gd-empty').forEach((n) => n.remove());
+    const W = Math.max(280, host.clientWidth);
+    const svg = d3.select(host).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label);
+    return { svg, W };
+  };
+  const empty = (host, text) => {
+    host.querySelectorAll('svg, .gd-empty').forEach((n) => n.remove());
+    const p = document.createElement('p'); p.className = 'gd-empty'; p.textContent = text; host.appendChild(p);
+  };
+  const grid = (svg, y, ticks, x0, x1, fmtTick) => {
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', x0).attr('x2', x1).attr('y1', y).attr('y2', y).style('stroke', 'var(--grid)');
+    caption(svg.append('g').selectAll('text').data(ticks).join('text').attr('x', x0 - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end')).text(fmtTick);
+  };
+
+  // ---------- contribution: stacked bars ----------
+  function drawContribution() {
+    const c = D.contribution, host = $('contribution-chart'), seg = state.segment;
+    $('contribution-title').textContent = c.title; $('contribution-note').textContent = c.note || '';
+    const ids = D.sources.map((s) => s.id);
+    legend($('contribution-legend'), ids);
+    const data = periods.map((p) => {
+      const o = { p, raw: {} }; ids.forEach((id) => { o.raw[id] = val(p, seg, id, c.metric); o[id] = o.raw[id] || 0; });
+      o.sum = d3.sum(ids, (id) => o[id]); o.total = val(p, seg, TOTAL, c.metric);
+      o.share = c.shareGroup && o.total ? d3.sum(D.sources.filter((s) => s.group === c.shareGroup), (s) => o[s.id]) / o.total : null;
+      return o;
+    });
+    if (!d3.max(data, (d) => d.sum)) return empty(host, 'No data for this segment.');
+    const H = 260, { svg, W } = newSvg(host, H, c.title);
+    const y = d3.scaleLinear([0, d3.max(data, (d) => d.sum) * 1.15], [H - 24, 22]).nice();
+    const ticks = y.ticks(4), tf = (v) => fmt(c.metric, v);
+    const left = measure(svg, ticks.map(tf)) + 10;
+    const x = d3.scaleBand(periods, [left, W - 4]).padding(0.3);
+    const bw = Math.min(32, x.bandwidth()), off = (x.bandwidth() - bw) / 2;
+    grid(svg, y, ticks, left, W - 4, tf);
+    svg.append('g').selectAll('g').data(d3.stack().keys(ids)(data)).join('g').style('fill', (s) => colorOf(s.key))
+      .selectAll('rect').data((s) => s).join('rect')
+      .attr('x', (d) => x(d.data.p) + off).attr('width', bw).attr('y', (d) => y(d[1])).attr('height', (d) => Math.max(0, y(d[0]) - y(d[1]))).attr('rx', 2);
+    if (c.shareGroup) {
+      svg.append('g').selectAll('text').data(data).join('text').attr('x', (d) => x(d.p) + x.bandwidth() / 2).attr('y', (d) => y(d.sum) - 6)
+        .attr('text-anchor', 'middle').style('fill', 'var(--fg)').style('font-size', 'var(--fs-caption)').text((d) => (d.share == null ? '' : d3.format('.1%')(d.share)));
+    }
+    caption(svg.append('g').selectAll('text').data(periods).join('text').attr('x', (p) => x(p) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle')).text((p) => pShort(p, W < 440));
+    const t = tipFor(host);
+    svg.append('g').selectAll('rect').data(data).join('rect').attr('x', (d) => x(d.p)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H).style('fill', 'transparent')
+      .on('mousemove', (e, d) => showTip(host, t, e, pLabel(d.p), [
+        ...ids.slice().reverse().map((id) => [nameOf(id), fmt(c.metric, d.raw[id]), colorOf(id)]),
+        ['Total', fmt(c.metric, d.total)],
+        ...(d.share == null ? [] : [[`${c.shareGroup} share`, d3.format('.1%')(d.share)]]),
+      ]))
+      .on('mouseleave', () => { t.hidden = true; });
+  }
+
+  // ---------- efficiency: lines with end labels ----------
+  function drawEfficiency() {
+    const c = D.efficiency, host = $('efficiency-chart'), seg = state.segment;
+    $('efficiency-title').textContent = c.title; $('efficiency-note').textContent = c.note || '';
+    const series = c.sources.map((id) => ({ id, pts: periods.map((p) => ({ p, v: val(p, seg, id, c.metric) })).filter((d) => d.v != null && d.v > 0) })).filter((s) => s.pts.length);
+    legend($('efficiency-legend'), series.map((s) => s.id));
+    if (!series.length) return empty(host, 'No cost data for this segment.');
+    const H = 260, { svg, W } = newSvg(host, H, c.title);
+    const y = d3.scaleLinear([0, d3.max(series, (s) => d3.max(s.pts, (d) => d.v)) * 1.1], [H - 24, 12]).nice();
+    const ticks = y.ticks(4), tf = (v) => fmt(c.metric, v), tickF = (v) => tf(v).replace(/\.00$/, '');
+    const left = measure(svg, ticks.map(tickF)) + 10;
+    const ends = series.map((s) => `${nameOf(s.id)} ${tf(s.pts[s.pts.length - 1].v)}`);
+    const right = measure(svg, ends) + 14;
+    const x = d3.scalePoint(periods, [left + 10, W - right]);
+    grid(svg, y, ticks, left, W - right + 6, tickF);
+    caption(svg.append('g').selectAll('text').data(periods).join('text').attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle')).text((p) => pShort(p, W < 440));
+    const line = d3.line().x((d) => x(d.p)).y((d) => y(d.v));
+    series.forEach((s) => {
+      svg.append('path').attr('d', line(s.pts)).style('fill', 'none').style('stroke', colorOf(s.id)).style('stroke-width', 2).style('stroke-linecap', 'round').style('stroke-linejoin', 'round');
+      svg.append('g').selectAll('circle').data(s.pts).join('circle').attr('cx', (d) => x(d.p)).attr('cy', (d) => y(d.v)).attr('r', 2.5).style('fill', colorOf(s.id));
+    });
+    const labels = series.map((s, i) => { const l = s.pts[s.pts.length - 1]; return { text: ends[i], x: x(l.p), y: y(l.v), color: colorOf(s.id) }; }).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) labels[i].y = Math.max(labels[i].y, labels[i - 1].y + 14);
+    svg.append('g').selectAll('text').data(labels).join('text').attr('x', (l) => l.x + 8).attr('y', (l) => l.y).attr('dy', '0.32em').style('fill', (l) => l.color).style('font-size', 'var(--fs-caption)').text((l) => l.text);
+    const t = tipFor(host);
+    const rule = svg.append('line').attr('y1', 12).attr('y2', H - 24).style('stroke', 'var(--ref)').attr('visibility', 'hidden');
+    svg.append('rect').attr('x', left).attr('width', Math.max(0, W - right - left + 6)).attr('y', 0).attr('height', H).style('fill', 'transparent')
+      .on('mousemove', (e) => {
+        const [mx] = d3.pointer(e);
+        const p = periods.reduce((b, q) => (Math.abs(x(q) - mx) < Math.abs(x(b) - mx) ? q : b), periods[0]);
+        rule.attr('x1', x(p)).attr('x2', x(p)).attr('visibility', 'visible');
+        showTip(host, t, e, pLabel(p), series.map((s) => [nameOf(s.id), tf(s.pts.find((d) => d.p === p)?.v), colorOf(s.id)]));
+      })
+      .on('mouseleave', () => { t.hidden = true; rule.attr('visibility', 'hidden'); });
+  }
+
+  // ---------- funnel ----------
+  function drawFunnel() {
+    const c = D.funnel; if (!c || !c.steps?.length) return;
+    $('funnel').hidden = false; $('funnel-title').textContent = c.title; $('funnel-note').textContent = c.note || '';
+    const host = $('funnel-chart');
+    const steps = c.steps.map((m) => ({ m, v: val(state.period, state.segment, TOTAL, m) }));
+    if (steps.some((s) => s.v == null)) return empty(host, 'Not every funnel step has data for this segment and period.');
+    const rowH = 34, H = steps.length * rowH + 8, { svg, W } = newSvg(host, H, c.title);
+    const names = steps.map((s) => metric[s.m].name);
+    const left = measure(svg, names) + 14;
+    const valW = measure(svg, steps.map((s) => fmt(s.m, s.v) + '   kept 100.0%')) + 12;
+    const x = d3.scaleLinear([0, steps[0].v || 1], [0, Math.max(40, W - left - valW)]);
+    const drops = steps.map((s, i) => (i === 0 || !steps[i - 1].v ? null : 1 - s.v / steps[i - 1].v));
+    const worst = d3.maxIndex(drops.map((d) => (d == null ? -1 : d)));
+    steps.forEach((s, i) => {
+      const y0 = 4 + i * rowH;
+      caption(svg.append('text').attr('x', left - 10).attr('y', y0 + rowH / 2 - 2).attr('dy', '0.32em').attr('text-anchor', 'end')).style('fill', 'var(--fg)').text(names[i]);
+      svg.append('rect').attr('x', left).attr('y', y0 + 4).attr('height', rowH - 12).attr('width', Math.max(2, x(s.v))).attr('rx', 2).style('fill', i === worst && drops[i] != null ? 'var(--bad)' : colorOf(D.sources[0].id));
+      caption(svg.append('text').attr('x', left + Math.max(2, x(s.v)) + 8).attr('y', y0 + rowH / 2 - 2).attr('dy', '0.32em'))
+        .text(fmt(s.m, s.v) + (drops[i] == null ? '' : `   kept ${d3.format('.1%')(1 - drops[i])}`));
+    });
+  }
+
+  // ---------- status of each source ----------
+  function drawStatus() {
+    const c = D.status, seg = state.segment, p = state.period, th = c.threshold ?? 0.05;
+    $('status-title').textContent = c.title; $('status-note').textContent = c.note || `Change vs the period before. Growing or declining = more than ${d3.format('.0%')(th)} either way.`;
+    const total = val(p, seg, TOTAL, c.metric);
+    const rows = D.sources.map((s) => {
+      const v = val(p, seg, s.id, c.metric), prev = prevOf(p) ? val(prevOf(p), seg, s.id, c.metric) : null;
+      const ch = change(p, seg, s.id, c.metric);
+      let status = 'No data';
+      if (v != null && v > 0) status = !prev ? 'New' : ch?.pct > th ? 'Growing' : ch?.pct < -th ? 'Declining' : 'Flat';
+      return { s, v, share: total && v != null ? v / total : null, ch, status, eff: c.efficiencyMetric ? val(p, seg, s.id, c.efficiencyMetric) : null };
+    }).sort((a, b) => (b.v || 0) - (a.v || 0));
+    const head = ['Source', 'Group', metric[c.metric].name, 'Share of total', 'Change', 'Status', ...(c.efficiencyMetric ? [metric[c.efficiencyMetric].name] : [])];
+    const thead = $('status-table').querySelector('thead');
+    thead.replaceChildren(row('th', head));
+    const maxShare = d3.max(rows, (r) => r.share || 0) || 1;
+    $('status-table').querySelector('tbody').replaceChildren(...rows.map((r) => {
+      const tr = document.createElement('tr');
+      const cells = [nameOf(r.s.id), r.s.group || '', fmt(c.metric, r.v)];
+      cells.forEach((v) => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      const share = document.createElement('td'), wrap = document.createElement('span'), bar = document.createElement('span');
+      wrap.className = 'gd-share'; bar.className = 'gd-bar';
+      bar.style.width = `${Math.round(((r.share || 0) / maxShare) * 70)}px`; bar.style.background = colorOf(r.s.id);
+      wrap.append(bar, r.share == null ? '—' : d3.format('.1%')(r.share)); share.appendChild(wrap); tr.appendChild(share);
+      const chg = document.createElement('td'); chg.textContent = chgText(r.ch) || '—'; chg.className = chgClass(r.ch, c.metric); tr.appendChild(chg);
+      const st = document.createElement('td'), pill = document.createElement('span');
+      pill.className = 'gd-pill ' + r.status.toLowerCase().replace(' ', ''); pill.textContent = r.status; st.appendChild(pill); tr.appendChild(st);
+      if (c.efficiencyMetric) { const td = document.createElement('td'); td.textContent = fmt(c.efficiencyMetric, r.eff); tr.appendChild(td); }
+      return tr;
+    }));
+  }
+  const row = (tag, cells) => { const tr = document.createElement('tr'); cells.forEach((v) => { const c = document.createElement(tag); c.textContent = v; tr.appendChild(c); }); return tr; };
+
+  // ---------- detail table ----------
+  function drawTable() {
+    const ms = D.table?.metrics || D.metrics.map((m) => m.id), p = state.period;
+    $('table-title').textContent = `All segments, ${pLabel(p)}`;
+    $('detail-table').querySelector('thead').replaceChildren(row('th', ['Segment', 'Source', ...ms.map((m) => metric[m].name)]));
+    const trs = [];
+    D.segments.forEach((seg) => [TOTAL, ...D.sources.map((s) => s.id)].forEach((src) => {
+      const r = get(p, seg, src); if (!r) return;
+      const tr = row('td', [seg, nameOf(src), ...ms.map((m) => fmt(m, val(p, seg, src, m)))]);
+      tr.className = src === TOTAL ? 'gd-total' : 'gd-sub'; trs.push(tr);
+    }));
+    $('detail-table').querySelector('tbody').replaceChildren(...trs);
+  }
+
+  // ---------- header, tiles, takeaway ----------
+  function drawHeader() {
+    const seg = state.segment, p = state.period;
+    const c = D.contribution, m = c.metric;
+    const v = val(p, seg, TOTAL, m), ch = change(p, seg, TOTAL, m);
+    const top = D.sources.filter((s) => !s.unlinked).map((s) => ({ s, v: val(p, seg, s.id, m) || 0 })).sort((a, b) => b.v - a.v)[0];
+    const tk = $('takeaway'); tk.replaceChildren();
+    const b = (text) => { const e = document.createElement('b'); e.textContent = text; return e; };
+    tk.append(`In ${pLabel(p)}, ${seg === 'All' ? 'the business' : seg} had `, b(fmt(m, v)), ` ${metric[m].phrase || metric[m].name}`);
+    if (ch) tk.append(' (', b(chgText(ch)), ' vs the period before)');
+    tk.append('.');
+    if (top && v) tk.append(` The biggest source was ${top.s.name} with `, b(d3.format('.1%')(top.v / v)), ' of it.');
+    const host = $('tile-groups');
+    host.replaceChildren(...D.tileGroups.map((g) => {
+      const sec = document.createElement('section'); sec.className = 'gd-group';
+      const lab = document.createElement('p'); lab.className = 'gd-label'; lab.textContent = g.label;
+      const tiles = document.createElement('div'); tiles.className = 'gd-tiles';
+      g.metrics.forEach((id) => {
+        const mm = metric[id], t = document.createElement('div'); t.className = 'gd-tile';
+        const n = document.createElement('div'); n.className = 'gd-tile-name'; n.textContent = mm.sub ? `${mm.name} · ${mm.sub}` : mm.name;
+        const vv = document.createElement('div'); vv.className = 'gd-tile-value'; vv.textContent = fmt(id, val(p, seg, TOTAL, id));
+        const c2 = change(p, seg, TOTAL, id), cc = document.createElement('div'); cc.className = 'gd-chg ' + chgClass(c2, id);
+        cc.textContent = c2 ? `${chgText(c2)} ${mm.perDay ? 'per day ' : ''}vs period before` : prevOf(p) ? 'No comparison' : 'First period shown';
+        t.append(n, vv, cc); tiles.appendChild(t);
+      });
+      sec.append(lab, tiles); return sec;
+    }));
+  }
+
+  // ---------- controls ----------
+  function controls() {
+    $('page-title').textContent = D.title || 'Growth Overview';
+    document.title = D.title || 'Growth Overview';
+    $('sample-badge').hidden = !D.sample;
+    $('fresh').textContent = 'Data to ' + d3.utcFormat('%-d %b %Y')(new Date(D.asOf + 'T00:00:00Z'));
+    $('notes-list').replaceChildren(...(D.notes || []).map((n) => { const li = document.createElement('li'); li.textContent = n; return li; }));
+    const segBox = $('segment-picker');
+    segBox.replaceChildren(...D.segments.map((s) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = s;
+      b.addEventListener('click', () => { state.segment = s; render(); }); return b;
+    }));
+    const full = periods.filter((p) => days(p) >= pLen(p));
+    state.period = full[full.length - 1] || periods[periods.length - 1];
+    const sel = $('period-picker');
+    sel.replaceChildren(...periods.slice().reverse().map((p) => new Option(pLabel(p), p)));
+    sel.addEventListener('change', () => { state.period = sel.value; render(); });
+  }
+
+  function render() {
+    [...$('segment-picker').children].forEach((b) => b.setAttribute('aria-pressed', String(b.textContent === state.segment)));
+    $('period-picker').value = state.period;
+    drawHeader(); drawContribution(); drawEfficiency(); drawFunnel(); drawStatus(); drawTable();
+  }
+
+  controls(); render();
+  let w = window.innerWidth;
+  window.addEventListener('resize', () => { if (window.innerWidth !== w) { w = window.innerWidth; render(); } });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+})();
+</script>
+</body>
+</html>

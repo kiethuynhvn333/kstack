@@ -78,6 +78,7 @@ No install, no server, no database — just Markdown files and shell scripts, sy
 | **Reflect, mistakes, learnings** | Mistakes become traps and regression checks; a short weekly review moves lessons that hold everywhere to the shared hub | `skills/fix-and-save-mistake/`, `skills/weekly-knowledge-review/` |
 | **Verification** | Four tiers (lint → invariants → replay a saved query → independent check), a stamp on every number, and a ledger of verified queries that expires when a query changes | `knowledge/measurement/verification.md`, `skills/verify-number/`, `scripts/sql-lint.sh`, `scripts/recipe-check.sh` |
 | **Skills** | Repeatable workflows that load the rules they need as Step 0 | `skills/` |
+| **Growth dashboard** | Asks a few plain questions (industry, metrics, data, sources of growth) and builds a web page or a Google Sheets / Excel workbook: key metrics, what each source contributes, and whether each source is growing | `skills/growth-dashboard/` |
 | **Tools and permissions** | What each tool is trusted for, and what the agent may do alone vs with approval | `workspace.md`, `rules/actions.md` |
 
 ## Quick start — let your AI tool do it
@@ -296,7 +297,7 @@ profile.example.md     how you like to work        → copied to profile.md at s
 workspace.example.md   business, metrics, tools, permissions → copied to workspace.md
 projects/_template/    README (brief + read order) + worklog + per segment: open items, decisions, experiments, knowledge
 knowledge/             shared hub: INDEX router, measurement/ (metrics, verification), channels/, universal learnings, meta/
-skills/                session-close, weekly review, verify-number, self-check, fix-and-save-mistake, verification tests
+skills/                session-close, weekly review, verify-number, self-check, fix-and-save-mistake, verification tests, growth-dashboard
 scripts/               next-id.sh (unique IDs) · validate.sh (structure check) · sql-lint.sh · recipe-check.sh · update.sh
 archive/               superseded records — kept, never default-loaded
 ```

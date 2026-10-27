@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased — growth dashboard skill
+
+**In one line:** say "build me a growth dashboard" and the agent walks you through it, even if you have
+never made one, and gives you one page that shows what you grow and which sources drive it.
+
+- **New skill `skills/growth-dashboard/`.** It asks one thing at a time: your industry (17 types with
+  suggested north-star metrics, metrics and sources of growth), the metrics you grow, where your data is
+  (a live connection, a file, a pasted table, or the built-in sample), and your sources of growth (paid,
+  owned, organic). It shows you the plan before building anything, checks the numbers, then builds it.
+- **Two versions, same content:** a web page you open in any browser, or a Google Sheets / Excel workbook
+  (`assets/build_workbook.py`) whose Segment and Period dropdowns drive every number and chart. Both are
+  built from one data file, so they always agree.
+- **Always the same shape:** metric tiles with change vs the period before, a stacked chart of
+  what each source contributes, cost per result by source, a funnel, a status table (growing / flat /
+  declining / new) and every caveat written on the page.
+- **A chart guide** (15 questions → the right chart) and **a UI spec** (tokens, type, components, light and
+  dark) so every dashboard looks and reads the same, plus a spreadsheet spec for the workbook.
+  `assets/dashboard-template.html` ships with made-up sample data: open it to see the result.
+
 ## v0.4.0 — Your agent learns while the session is still fresh (2026-10-12)
 
 **In one line:** kstack now captures what you learned at the end of every session, asks you to approve
