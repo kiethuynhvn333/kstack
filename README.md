@@ -6,9 +6,10 @@ Paid-media and growth work spans goals, campaigns, experiments, reporting and de
 
 kstack gives each objective a project home for its decisions, experiments, open items, session worklogs and its own knowledge. A shared knowledge hub holds metric definitions and lessons that hold across projects. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
 
-> **New in v0.4:** your agent now captures what you learned at the end of every session and asks you to
-> approve it while it is fresh, and each project keeps its own knowledge (facts, traps, hypotheses).
-> See [CHANGELOG.md](CHANGELOG.md). Already using kstack? See "Upgrading from v0.3" below.
+> **New in v0.5:** say "build me a growth dashboard" and your agent walks you through one view of the
+> metrics you grow and which sources of growth drive them, as a web page or a Google Sheets / Excel file
+> (`skills/growth-dashboard/`). See [CHANGELOG.md](CHANGELOG.md). Set up kstack before v0.4? See
+> "Upgrading from v0.3" below.
 
 The template uses Markdown files and shell scripts, versioned with Git. It works with file-reading agents such as Claude Code, Codex, Cursor and Gemini CLI, without a separate server or database.
 
