@@ -28,9 +28,11 @@
     "tileGroups":   [ {"label": "Volume", "metrics": ["id", ...]} ]       max 4 per group
     "contribution": {"metric", "title", "note", "shareGroup"}             stacked bars; shareGroup
                                            labels each bar with that group's share of Total
-    "efficiency":   {"metric", "sources": ["id" | "total"], "title", "note"}   lines
+    "efficiency":   {"metric", "sources": ["id" | "total"], "title", "note"}   lines; optional (leave out
+                                           when there is no spend data: the card is hidden)
     "funnel":       {"steps": ["id", ...], "title", "note"}               optional
-    "status":       {"metric", "efficiencyMetric", "threshold": 0.05, "title", "note"}
+    "status":       {"metric", "efficiencyMetric", "threshold": 0.05, "title", "note"}   optional; defaults
+                                           to the contribution metric
     "table":        {"metrics": ["id", ...]}                              optional, default all
     "notes": ["plain sentence", ...]
     "rows": [ {"period", "segment", "source": "<id>" | "total", "days", "values": {"id": number|null}} ]
@@ -332,6 +334,8 @@
   // ---------- efficiency: lines with end labels ----------
   function drawEfficiency() {
     const c = D.efficiency, host = $('efficiency-chart'), seg = state.segment;
+    $('efficiency').hidden = !(c && c.metric && c.sources?.length);  // optional: no spend data, no cost chart
+    if ($('efficiency').hidden) return;
     $('efficiency-title').textContent = c.title; $('efficiency-note').textContent = c.note || '';
     const series = c.sources.map((id) => ({ id, pts: periods.map((p) => ({ p, v: val(p, seg, id, c.metric) })).filter((d) => d.v != null && d.v > 0) })).filter((s) => s.pts.length);
     legend($('efficiency-legend'), series.map((s) => s.id));
@@ -390,7 +394,8 @@
 
   // ---------- status of each source ----------
   function drawStatus() {
-    const c = D.status, seg = state.segment, p = state.period, th = c.threshold ?? 0.05;
+    const c = { metric: D.contribution.metric, title: 'Status of each source of growth', ...(D.status || {}) };
+    const seg = state.segment, p = state.period, th = c.threshold ?? 0.05;
     $('status-title').textContent = c.title; $('status-note').textContent = c.note || `Change vs the period before. Growing or declining = more than ${d3.format('.0%')(th)} either way.`;
     const total = val(p, seg, TOTAL, c.metric);
     const rows = D.sources.map((s) => {

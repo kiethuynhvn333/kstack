@@ -181,13 +181,16 @@ def main(src, out):
     plast = 7 + len(periods)
 
     # efficiency table (periods x chosen sources), after the contribution table
-    e = D["efficiency"]
+    e = D.get("efficiency") or {}  # optional: no spend data, no cost chart
+    if not (e.get("metric") and e.get("sources")):
+        e = {"sources": []}
     e0 = tcol + 3
-    calc.cell(7, e0, "Period")
     names = {s["id"]: s["name"] for s in sources}
+    if e["sources"]:
+        calc.cell(7, e0, "Period")
     for j, sid in enumerate(e["sources"], 1):
         calc.cell(7, e0 + j, "Total" if sid == TOTAL else names[sid])
-    for i, p in enumerate(periods, 8):
+    for i, p in enumerate(periods if e["sources"] else [], 8):
         calc.cell(i, e0, shorts[p])
         for j, sid in enumerate(e["sources"], 1):
             calc.cell(i, e0 + j, f'=IF({V(q(p), SEG, q(sid), e["metric"])}="",NA(),{V(q(p), SEG, q(sid), e["metric"])})')
@@ -304,25 +307,26 @@ def main(src, out):
     style_axes(bar)
     dash.add_chart(bar, f"B{chart_row}")
 
-    line = LineChart()
-    line.title = e["title"]
-    line.add_data(Reference(calc, min_col=e0 + 1, max_col=e0 + len(e["sources"]), min_row=7, max_row=plast), titles_from_data=True)
-    line.set_categories(Reference(calc, min_col=e0, min_row=8, max_row=plast))
-    for i, s in enumerate(line.series):
-        sid = e["sources"][i]
-        color = FG if sid == TOTAL else (MUTED_SERIES if next(x for x in sources if x["id"] == sid).get("unlinked") else SERIES[[x["id"] for x in sources].index(sid) % 8])
-        s.graphicalProperties.line.solidFill = color
-        s.graphicalProperties.line.width = 25400
-        s.marker.symbol = "circle"
-        s.marker.size = 5
-        s.marker.graphicalProperties.solidFill = color
-        s.marker.graphicalProperties.line.solidFill = color
-        s.smooth = False
-    line.y_axis.number_format = number_format(M[e["metric"]].get("format"), cur).replace("0.00;", "0;")
-    line.display_blanks = "gap"
-    line.width, line.height = 17, 8.5
-    style_axes(line)
-    dash.add_chart(line, f"F{chart_row}")
+    if e["sources"]:
+        line = LineChart()
+        line.title = e.get("title", "")
+        line.add_data(Reference(calc, min_col=e0 + 1, max_col=e0 + len(e["sources"]), min_row=7, max_row=plast), titles_from_data=True)
+        line.set_categories(Reference(calc, min_col=e0, min_row=8, max_row=plast))
+        for i, s in enumerate(line.series):
+            sid = e["sources"][i]
+            color = FG if sid == TOTAL else (MUTED_SERIES if next(x for x in sources if x["id"] == sid).get("unlinked") else SERIES[[x["id"] for x in sources].index(sid) % 8])
+            s.graphicalProperties.line.solidFill = color
+            s.graphicalProperties.line.width = 25400
+            s.marker.symbol = "circle"
+            s.marker.size = 5
+            s.marker.graphicalProperties.solidFill = color
+            s.marker.graphicalProperties.line.solidFill = color
+            s.smooth = False
+        line.y_axis.number_format = number_format(M[e["metric"]].get("format"), cur).replace("0.00;", "0;")
+        line.display_blanks = "gap"
+        line.width, line.height = 17, 8.5
+        style_axes(line)
+        dash.add_chart(line, f"F{chart_row}")
 
     next_row = chart_row + 18
     if fn.get("steps"):
