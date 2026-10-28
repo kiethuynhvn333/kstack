@@ -1,23 +1,58 @@
 # Changelog
 
-## Unreleased — growth dashboard skill
+## v0.5.0 — See what grows, and what drives it (2026-10-28)
 
-**In one line:** say "build me a growth dashboard" and the agent walks you through it, even if you have
-never made one, and gives you one page that shows what you grow and which sources drive it.
+**In one line:** say "build me a growth dashboard" and your agent walks you through it, even if you have
+never built one, and gives you one view of the metrics you grow, which sources of growth drive them, and
+whether each source is growing or shrinking.
 
-- **New skill `skills/growth-dashboard/`.** It asks one thing at a time: your industry (17 types with
-  suggested north-star metrics, metrics and sources of growth), the metrics you grow, where your data is
-  (a live connection, a file, a pasted table, or the built-in sample), and your sources of growth (paid,
-  owned, organic). It shows you the plan before building anything, checks the numbers, then builds it.
-- **Two versions, same content:** a web page you open in any browser, or a Google Sheets / Excel workbook
-  (`assets/build_workbook.py`) whose Segment and Period dropdowns drive every number and chart. Both are
-  built from one data file, so they always agree.
-- **Always the same shape:** metric tiles with change vs the period before, a stacked chart of
-  what each source contributes, cost per result by source, a funnel, a status table (growing / flat /
-  declining / new) and every caveat written on the page.
-- **A chart guide** (15 questions → the right chart) and **a UI spec** (tokens, type, components, light and
-  dark) so every dashboard looks and reads the same, plus a spreadsheet spec for the workbook.
-  `assets/dashboard-template.html` ships with made-up sample data: open it to see the result.
+### The problem
+Growth teams do a lot every week (new campaigns, emails, pushes, SEO pages) and the numbers often don't
+move. Usually nobody can see the whole picture: the data sits in ad platforms, a warehouse and a few
+spreadsheets, and no single page shows how much each source actually contributes. You can't manage what
+you can't see.
+
+### What you get
+- **A new skill, `skills/growth-dashboard/`, built for first-timers.** It asks one thing at a time, with
+  numbered choices and a "not sure — pick for me" option:
+  1. **Your industry** — 17 types (marketplace, e-commerce, subscription app, SaaS, lead generation,
+     fintech, games, media, travel and more), each with a suggested north-star metric, typical metrics,
+     funnel and sources of growth.
+  2. **The metrics you grow** — pick from the suggestions or add your own; each gets a one-line definition.
+  3. **Where your data is** — a live connection (BigQuery, Google Sheets, GA4, a CRM, Shopify…), a CSV or
+     Excel file, a pasted table, or the built-in sample if you have no data yet.
+  4. **Your sources of growth** — paid, owned (email, push, CRM) and organic. Anything that can't be matched
+     to a source stays visible as "Not linked", because a big gap there is a tracking problem.
+- **A plan before anything is built.** The agent shows the metrics, sources, data and charts in a few lines,
+  adds one line of pushback if something looks off, and builds nothing until you say yes.
+- **Numbers checked before they are shown.** Freshness, parts vs total, impossible values and unit-cost
+  math, posted in chat as a short "Checks" message. People are never added up across sources as if they
+  were unique.
+- **Two versions, same content.** A web page you open in any browser, or a Google Sheets / Excel workbook
+  whose Segment and Period dropdowns drive every number and chart. Both are built from one data file, so
+  they always agree.
+- **Always the same shape:** metric tiles with the change vs the period before, a stacked chart of what each
+  source contributes, cost per result by source, a funnel, a status table (growing / flat / declining /
+  new), a detail table and every caveat written on the page.
+- **A chart guide and a UI spec.** 15 everyday questions mapped to the right chart (trend → line,
+  contribution → stacked bars, drop-off → funnel…), plus one look for every dashboard: colors, type,
+  components, light and dark, number formats.
+
+### Try it
+Open `skills/growth-dashboard/assets/dashboard-template.html` in a browser to see the result with made-up
+sample data, or tell your agent "build me a growth dashboard".
+
+### Tested
+Four QC runs before release: a brand-new user with no data, a CSV with a partial month and unmatched rows,
+the web page at desktop and phone width in light and dark, and the workbook. All pass. Fixed after QC: the
+sample path no longer skips the plan, people totals are never a sum of sources, tooltips stay inside their
+cards, missing values show "—", and a dashboard without spend data no longer crashes (the cost chart is
+simply left out).
+
+### Known limits
+- The workbook was checked in LibreOffice; Excel and Google Sheets are expected to show it the same way but
+  were not tested directly.
+- The sample data is a marketplace; other industries see their own metrics only once they bring their data.
 
 ## v0.4.0 — Your agent learns while the session is still fresh (2026-10-12)
 
