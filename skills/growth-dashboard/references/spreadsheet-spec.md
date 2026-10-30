@@ -1,6 +1,6 @@
 # Spreadsheet spec — the Google Sheets / Excel version
 
-Used by `skills/growth-dashboard/` step 7 when the user picks a spreadsheet. `assets/build_workbook.py`
+Used by `skills/growth-dashboard/` step 8 when the user picks a spreadsheet. `assets/build_workbook.py`
 builds exactly this from `dashboard-data.json`:
 
 ```bash

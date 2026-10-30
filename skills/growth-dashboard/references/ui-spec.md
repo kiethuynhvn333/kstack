@@ -1,6 +1,6 @@
 # UI spec — how every growth dashboard looks
 
-Used by `skills/growth-dashboard/` step 7. `assets/dashboard-template.html` already follows this
+Used by `skills/growth-dashboard/` step 8. `assets/dashboard-template.html` already follows this
 spec; read it when you add or change anything by hand, or build the page in another tool (a live
 dashboard, a BI tool), so it still looks and reads the same.
 

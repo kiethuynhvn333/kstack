@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.1 — growth-dashboard follows its own order (2026-10-30)
+A test in Gemini showed the skill was only followed when the user forced the order. Now the skill
+enforces it: a hard-stop block at the top (an attached file does not answer the step 1–4 questions;
+ask them in one message and wait), Checks as their own step that is never sent with the built file,
+no summed people totals (left empty, shown as "—", with a note), and rules against an efficiency chart
+without spend, a mixed-unit funnel and a rate above 100%. `build_workbook.py` now refuses data that
+breaks these rules. Steps after 5 moved: Checks is step 7, Build is 8, Hand over is 9.
+
 ## v0.5.0 — See what grows, and what drives it (2026-10-28)
 
 **In one line:** say "build me a growth dashboard" and your agent walks you through it, even if you have

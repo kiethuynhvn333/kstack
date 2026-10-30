@@ -25,6 +25,9 @@
         format: "int" | "money" (compact) | "money_full" | "percent" (0–1)
         good:   "up" | "down" | "neutral"   (colors the change)
         perDay: true for totals (leads, cost) so partial periods compare per day
+        people: true for metrics that count people (signups, sellers, buyers, users). With one row per
+                source there is no de-duplicated total: leave the "total" row empty for them
+                (shown as "—"). build_workbook.py refuses a people total equal to the sum of sources.
     "tileGroups":   [ {"label": "Volume", "metrics": ["id", ...]} ]       max 4 per group
     "contribution": {"metric", "title", "note", "shareGroup"}             stacked bars; shareGroup
                                            labels each bar with that group's share of Total

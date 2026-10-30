@@ -1,6 +1,6 @@
 # Chart guide — which chart for which question
 
-Used by `skills/growth-dashboard/` steps 5 and 7. Pick the chart by **the question the reader has**,
+Used by `skills/growth-dashboard/` steps 5 and 8. Pick the chart by **the question the reader has**,
 not by the data. One chart answers one question; its title says the question's answer in plain words.
 Charts marked ★ are built into `assets/dashboard-template.html`; the rest you draw by hand following
 `references/ui-spec.md`.
@@ -26,6 +26,9 @@ Charts marked ★ are built into `assets/dashboard-template.html`; the rest you 
 ## Rules for every chart
 - **No dual y-axes.** Two metrics with different units → two charts.
 - **Don't mix daily averages and totals** on one axis.
+- **No spend data, no efficiency chart.** Cost and unit-cost charts need real spend.
+- **A funnel only for the same people, same unit, same period** (no totals mixed with daily averages,
+  no sources mixed). **A rate above 100% is a bug**: fix the definition or drop the chart.
 - **Don't stack people counts as if they were unique** unless the total is computed separately;
   the stacked total then may exceed the real total, and the note must say so.
 - **Partial periods** are labelled (e.g. "Oct 2026 (1–26)"); compare totals per day, not raw.

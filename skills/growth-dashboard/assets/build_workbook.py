@@ -12,6 +12,7 @@ Needs openpyxl (pip install openpyxl).
 import calendar
 import datetime
 import json
+import re
 import sys
 
 from openpyxl import Workbook
@@ -26,6 +27,8 @@ SERIES = ["2F6FD6", "D9822B", "7A5BD6", "1F9E89", "C94F7C", "8A9A2B", "4AA3C9", 
 MUTED_SERIES, FG, MUTED, LINE, OK, BAD, WARN, BG = "BDBCB5", "1C1C1A", "6A6964", "E3E2DD", "1D7A4C", "B42318", "9A6700", "F6F6F3"
 SERIF, SANS = "Georgia", "Arial"
 TOTAL = "total"
+EMPTY = "\u2014"  # shown instead of a blank for empty / not-available values
+PEOPLE_RE = re.compile(r"signup|sign_up|seller|buyer|user|people|visitor|customer|member|lead_users", re.I)
 hair = Side(style="thin", color=LINE)
 BOX = Border(left=hair, right=hair, top=hair, bottom=hair)
 
@@ -59,8 +62,61 @@ def period_meta(p, grain, days):
     return (name if days >= full else f"{name} (1–{days})"), d.strftime("%b %y"), full
 
 
+def check_data(D):
+    """Refuse data that breaks the skill's rules (SKILL.md steps 6-8). Returns the problems found."""
+    bad = []
+    M = {m["id"]: m for m in D["metrics"]}
+    src_ids = [s["id"] for s in D["sources"]]
+    total = {}
+    parts = {}
+    for r in D["rows"]:
+        key = (r["period"], r["segment"])
+        for k, v in (r.get("values") or {}).items():
+            if v is None:
+                continue
+            if r["source"] == TOTAL:
+                total[key + (k,)] = v
+            elif r["source"] in src_ids:
+                parts.setdefault(key + (k,), []).append(v)
+            m = M.get(k, {})
+            msg = f"{k} is {v:.0%} in {key[0]}/{key[1]}/{r['source']}: a rate above 100% is a bug (fix the definition or drop the metric/chart)"
+            if m.get("format") == "percent" and v > 1 and not any(b.startswith(f"{k} is ") for b in bad):
+                bad.append(msg)
+    # People metrics have no de-duplicated total when the data is one row per source.
+    for m in D["metrics"]:
+        if not m.get("people", bool(PEOPLE_RE.search(m["id"] + " " + m.get("name", "")))):
+            continue
+        for (p, sg, k), t in total.items():
+            vals = parts.get((p, sg, k), [])
+            if k == m["id"] and len(vals) > 1 and abs(t - sum(vals)) < max(0.5, abs(t) * 1e-9):
+                bad.append(f"people metric '{k}' total ({t:,.0f}) equals the sum of its sources in {p}/{sg}: people overlap "
+                           "across sources, so leave the total empty (no value in the 'total' row) and add a note. "
+                           'Set "people": false on the metric only if it counts actions or money')
+                break
+    fn = (D.get("funnel") or {}).get("steps") or []
+    if fn:
+        if len({bool(M[m].get("perDay")) for m in fn}) > 1:
+            bad.append("funnel mixes totals and daily averages (perDay differs between steps): drop the funnel")
+        for p, sg in sorted({k[:2] for k in total}):
+            seq = [total.get((p, sg, m)) for m in fn]
+            if any(v is None for v in seq):
+                bad.append(f"funnel step has no total in {p}/{sg}: a funnel needs the same people at every step; drop it")
+                break
+            if any(b > a for a, b in zip(seq, seq[1:])):
+                bad.append(f"funnel gets bigger from one step to the next in {p}/{sg}: the steps are not the same people; drop it")
+                break
+    e = D.get("efficiency") or {}
+    if e.get("metric") and e.get("sources"):
+        if not any(k[2] == e["metric"] for k in list(total) + list(parts)):
+            bad.append(f"efficiency chart asks for '{e['metric']}' but the data has none: no spend data, no efficiency chart")
+    return bad
+
+
 def main(src, out):
     D = json.load(open(src, encoding="utf-8"))
+    problems = check_data(D)
+    if problems:
+        sys.exit("Not building. Fix these first (SKILL.md steps 6-8):\n- " + "\n- ".join(problems))
     cur = D.get("currency", "$")
     grain = D.get("grain", "month")
     segments, sources, metrics = D["segments"], D["sources"], D["metrics"]
@@ -257,11 +313,11 @@ def main(src, out):
             name = dash.cell(row + 1, cc, f'{m["name"]} · {m["sub"]}' if m.get("sub") else m["name"])
             name.font = Font(name=SANS, size=9, color=MUTED)
             name.alignment = Alignment(wrap_text=True, vertical="top")
-            val = dash.cell(row + 2, cc, f"=Calc!$B${r}")
+            val = dash.cell(row + 2, cc, f'=IF(Calc!$B${r}="",{q(EMPTY)},Calc!$B${r})')
             val.font = Font(name=SERIF, size=20, color=FG)
             val.number_format = number_format(m.get("format"), cur)
             val.alignment = Alignment(horizontal="left")
-            ch = dash.cell(row + 3, cc, f"=Calc!$D${r}")
+            ch = dash.cell(row + 3, cc, f'=IF(Calc!$D${r}="",{q(EMPTY)},Calc!$D${r})')
             ch.font = Font(name=SANS, size=9, color=MUTED)
             ch.alignment = Alignment(horizontal="left")
             if m.get("format") == "percent":
@@ -357,7 +413,7 @@ def main(src, out):
         cell.alignment = Alignment(horizontal="left" if j < 2 else "right")
     for i, s in enumerate(sources):
         r, cr = r0 + 4 + i, srow0 + i
-        vals = [s["name"], s.get("group", ""), f"=Calc!$B${cr}", f'=IFERROR(Calc!$B${cr}/Calc!$B${mrow[sm]},"")', f"=Calc!$D${cr}",
+        vals = [s["name"], s.get("group", ""), f'=IF(Calc!$B${cr}="",{q(EMPTY)},Calc!$B${cr})', f'=IFERROR(Calc!$B${cr}/Calc!$B${mrow[sm]},{q(EMPTY)})', f'=IF(Calc!$D${cr}="",{q(EMPTY)},Calc!$D${cr})',
                 f'=IF(N(Calc!$B${cr})=0,"No data",IF(N(Calc!$C${cr})=0,"New",IF(N(Calc!$D${cr})>Setup!$T$2,"Growing",IF(N(Calc!$D${cr})<-Setup!$T$2,"Declining","Flat"))))']
         if em:
             vals.append("=" + V(PER, SEG, q(s["id"]), em))
@@ -398,7 +454,8 @@ def main(src, out):
             is_total = sid == TOTAL
             detail.cell(r, 1, seg), detail.cell(r, 2, "Total" if is_total else names[sid])
             for j, m in enumerate(tm, 3):
-                cell = detail.cell(r, j, "=" + V(PER, q(seg), q(sid), m))
+                cell = detail.cell(r, j, f'=IF({V(PER, q(seg), q(sid), m)}="",{q(EMPTY)},{V(PER, q(seg), q(sid), m)})')
+                cell.alignment = Alignment(horizontal="right")
                 cell.number_format = number_format(M[m].get("format"), cur)
             for j in range(1, len(tm) + 3):
                 cell = detail.cell(r, j)
