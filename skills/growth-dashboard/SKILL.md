@@ -1,6 +1,6 @@
 ---
 name: growth-dashboard
-description: Build a growth overview dashboard for someone who has never made one. It asks a few plain questions (what industry, which metrics you grow, where the data is, which sources bring growth), checks the numbers, and builds the dashboard as an HTML page or a Google Sheets / Excel workbook, showing the key metrics, how much each source of growth contributes, and whether each source is growing, flat or declining. Uses a standard chart guide and one UI spec, so every dashboard looks and reads the same. Use when the user says "growth dashboard", "growth overview", "see all my growth sources", "which channel brings growth", "track my key metrics", "build me a dashboard of my growth", "make me an Excel tracking dashboard", "growth tracker", "spreadsheet dashboard", or "refresh my growth dashboard".
+description: Build a growth overview dashboard for someone who has never made one. It asks a few plain questions (what industry, which metrics you grow, where the data is, which sources bring growth), checks the numbers, and builds the dashboard as a live page in your AI tool (a Claude artifact, a ChatGPT site), an HTML file, or a Google Sheets / Excel workbook, showing the key metrics, how much each source of growth contributes, and whether each source is growing, flat or declining. Uses a standard chart guide and one UI spec, so every dashboard looks and reads the same. Use when the user says "growth dashboard", "growth overview", "see all my growth sources", "which channel brings growth", "track my key metrics", "build me a dashboard of my growth", "make me an Excel tracking dashboard", "growth tracker", "spreadsheet dashboard", or "refresh my growth dashboard".
 ---
 
 # Growth dashboard — one page that shows what grows and what drives it
@@ -36,15 +36,17 @@ chat; connecting a tool is done in the tool's own settings.
 1. A dashboard plan the user approves (step 5), then a Checks message the user approves (step 7) —
    both before you build anything.
 2. `dashboard-data.json`: the checked numbers in one format (described at the top of
-   `assets/dashboard-template.html`). Both versions of the dashboard are built from this one file.
+   `assets/dashboard-template.html`). Every version of the dashboard is built from this one file.
 3. The dashboard (step 8), in the version the user picks (step 5):
-   - **Web page (HTML):** `assets/dashboard-template.html` with the data dropped in. Opens in any
-     browser; nicest to look at. In a tool with live dashboards (e.g. Claude artifacts), you may build
-     it there with the same layout and live queries instead.
+   - **Live page in the AI tool:** a Claude artifact, or a ChatGPT site. The same
+     `assets/dashboard-template.html` with the data dropped in, shown inside the tool and shareable
+     from there. Offer it only if the tool can do it.
+   - **HTML file on your computer:** the same page saved as a file. Opens in any browser; works in
+     every tool.
    - **Spreadsheet (Google Sheets or Excel):** an `.xlsx` workbook built by
      `assets/build_workbook.py`, laid out as in `references/spreadsheet-spec.md`. Opens in Excel, and in
      Google Sheets by importing it. Familiar, easy to share, and can refresh from a connected sheet.
-   Both follow the same chart guide and the same look (`references/ui-spec.md`).
+   All versions follow the same chart guide and the same look (`references/ui-spec.md`).
 4. `growth-dashboard-spec.md`: the answers, metric definitions, data source, queries and the chosen
    version, so the next refresh is one sentence ("refresh my growth dashboard"). In kstack, save all
    files in `projects/<project>/deliverables/growth-dashboard/`; elsewhere, together in a folder the
@@ -106,9 +108,13 @@ your own suggestion and mark it in the plan as "(my pick)" so they can change it
 ## Step 5 — Show the plan, get a yes
 In chat, at most ~15 lines: the metrics (with definitions), the sources, the data source, the time
 grain and window (default: monthly, last 6 months; weekly for a young business), which chart
-shows what (from `references/chart-guide.md`), and **the version**: "1. a web page you open in your
-browser, or 2. a Google Sheets / Excel file". If they are not sure: a spreadsheet when they will
-share it with a team or edit it, a web page when it is just for them. Add **one line of pushback** if you see a problem
+shows what (from `references/chart-guide.md`), and **the version**, as numbered choices.
+The four options: "a Claude artifact", "a ChatGPT site", "an Excel / Google Sheets file", "an HTML
+file saved on your computer". Show only what the tool can do and number what you show (Claude:
+artifact, Excel, HTML; ChatGPT: site, Excel, HTML; any other tool: Excel, HTML). Excel needs Python
+or a Sheets connector; the HTML file always works. If they are not sure: the artifact or site when
+it is just for them to look at, Excel when they will edit it or share it with a team, the HTML file
+when nothing else fits. Add **one line of pushback** if you see a problem
 (e.g. "paid is only ~8% of your users, so the total will barely move even if paid doubles").
 Add a one-line sketch of the page ("You'll see: 4 tiles, bars by source, a status table"). Ask what to
 add or remove. End the message with exactly this line and nothing after it:
@@ -163,12 +169,17 @@ Its own step. **Never in the same message as the built file.**
    goes in its `notes`: definitions, what "Not linked" is, partial periods, overlaps and why people
    totals are empty, anything missing. Empty or not-available values show "—", never blank.
 3. Build the version the user picked:
-   - **Web page:** copy `assets/dashboard-template.html` and replace the JSON inside its
-     `dashboard-data` block. Follow `references/ui-spec.md` for anything you add by hand.
+   - **Live page in the tool (Claude artifact / ChatGPT site):** use the contents of
+     `assets/dashboard-template.html` with the JSON inside its `dashboard-data` block replaced, as
+     the artifact or site. If the tool blocks the page's external scripts or fonts (d3, Google
+     Fonts) and it renders empty, say so and offer the HTML file.
+   - **HTML file:** copy `assets/dashboard-template.html`, replace the JSON inside its
+     `dashboard-data` block, and save it where the user can open it. Follow `references/ui-spec.md`
+     for anything you add by hand.
    - **Spreadsheet:** run `python3 assets/build_workbook.py dashboard-data.json growth-dashboard.xlsx`
      (needs Python with `openpyxl`; ask before installing it). No Python but a Google Sheets
      connector: build the tabs by hand as in `references/spreadsheet-spec.md`. Neither: say so and
-     offer the web page. For Google Sheets, tell the user: upload the file to Google Drive, then
+     offer the live page or the HTML file. For Google Sheets, tell the user: upload the file to Google Drive, then
      open it with Google Sheets.
 4. Open it once to check it works (a screenshot if your tool can; for a workbook, recalculate it and
    check the tiles show numbers or "—", not errors); fix what is visibly broken.

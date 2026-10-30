@@ -13,6 +13,8 @@ sample is never used when a data file is attached.
 Also: Excel/tracking-dashboard trigger phrases, a rule for partial answers (take your own pick and mark it),
 a one-line page sketch in the plan, and hand-over lines about opening the workbook in Excel/Sheets and
 bringing the spec file back to refresh.
+Step 5 now offers four versions, shown only if the tool can do them: a Claude artifact, a ChatGPT site, an
+Excel / Google Sheets file, or an HTML file saved on your computer.
 
 ## v0.5.0 — See what grows, and what drives it (2026-10-28)
 
