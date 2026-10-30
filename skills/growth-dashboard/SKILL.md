@@ -15,10 +15,14 @@ description: Build a growth overview dashboard for someone who has never made on
 - **An attached data file does NOT answer steps 1–4 and does NOT skip them.** Read it, then still ask,
   and use it to *suggest* answers ("your file has Google, Meta, Email — right?").
 - Ask steps 1–4 **in one message**, then **stop and wait**.
-- **Never send the Checks (step 7) in the same message as the built file.** Checks first, wait for
-  the yes, then build.
+- **The plan (step 5) and the Checks (step 7) are two different messages.** Write no Checks, and
+  pull no numbers, until the user has replied yes to the plan. Never send the Checks in the same
+  message as the plan or as the built file.
+- **"Use your suggestions" answers the questions only.** It is never a yes to the plan or to the
+  Checks. Each of those needs its own reply.
+- **A data file in the chat means real data.** Never offer or use the sample (option D in step 3).
 - Only exception: "refresh" with an existing spec file (see below).
-- Reply in the language the user writes in.
+- Write every reply in the language of the user's last message, from the first reply to the last.
 
 **Who it is for:** a growth or marketing person who wants one view of (1) the few metrics they are
 trying to grow, (2) which sources of growth bring them (paid ads, email, push, SEO…), and (3) the
@@ -71,7 +75,8 @@ Offer the options in `references/data-sources.md`, easiest first for them:
   an ads platform…). Best: the dashboard can refresh by itself.
 - **B. A file**: export a CSV or Excel and attach it. Fine to start; refresh means a new file.
 - **C. Paste a small table** into the chat. For a first try only.
-- **D. Not sure / no data yet**: show the made-up sample (`assets/dashboard-template.html` as it
+- **D. Not sure / no data yet** (only when no data is attached and the user says they have none;
+  never when a file, sheet or connection is already there): show the made-up sample (`assets/dashboard-template.html` as it
   ships), clearly labelled "Sample — not your data", then come back with real data. The sample is a
   **marketplace**: if their industry is different, say so in one line. Picking D does **not** skip
   the rest: still ask step 4 (sources) and show the step 5 plan, and open or copy the sample only
@@ -102,7 +107,8 @@ shows what (from `references/chart-guide.md`), and **the version**: "1. a web pa
 browser, or 2. a Google Sheets / Excel file". If they are not sure: a spreadsheet when they will
 share it with a team or edit it, a web page when it is just for them. Add **one line of pushback** if you see a problem
 (e.g. "paid is only ~8% of your users, so the total will barely move even if paid doubles").
-Ask what to add or remove, then **stop and wait. Build nothing before the user says yes.**
+Ask what to add or remove. End the message with exactly this line and nothing after it:
+`Reply yes to approve the plan.` Then **stop and wait. Build nothing before the user says yes.**
 
 ## Step 6 — Pull the numbers
 1. Aggregate at the source (SQL `GROUP BY`, a pivot) into one table: `period × segment × source`,
@@ -132,7 +138,10 @@ Its own step. **Never in the same message as the built file.**
    - **Two raw examples:** look at one normal and one extreme row yourself.
 2. Post a short "Checks" message in chat: each check above with pass / fail / not run, the latest
    date found, and what was not checked. Writing the checks only in the spec file does not count.
-3. **Stop and wait for the user's yes.** Then go to step 8.
+   The text must match the workbook: an empty people total is "left empty, not summed", never
+   "calculated" or "from distinct counts".
+3. End the message with exactly this line and nothing after it: `Reply yes to build.` Then **stop and
+   wait for the user's yes.** Only then go to step 8.
 
 ## Step 8 — Build the dashboard
 1. Pick each chart from `references/chart-guide.md`. Default content, in this order: header with a

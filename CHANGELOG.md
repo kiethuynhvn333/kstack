@@ -7,6 +7,9 @@ ask them in one message and wait), Checks as their own step that is never sent w
 no summed people totals (left empty, shown as "—", with a note), and rules against an efficiency chart
 without spend, a mixed-unit funnel and a rate above 100%. `build_workbook.py` now refuses data that
 breaks these rules. Steps after 5 moved: Checks is step 7, Build is 8, Hand over is 9.
+A second Gemini test showed plan and Checks still merged and the sample used despite an attached CSV, so the
+plan and Checks now end with a fixed "Reply yes" line, "use your suggestions" never approves them, and the
+sample is never used when a data file is attached.
 
 ## v0.5.0 — See what grows, and what drives it (2026-10-28)
 
