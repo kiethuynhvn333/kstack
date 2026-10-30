@@ -1,6 +1,6 @@
 ---
 name: growth-dashboard
-description: Build a growth overview dashboard for someone who has never made one. It asks a few plain questions (what industry, which metrics you grow, where the data is, which sources bring growth), checks the numbers, and builds the dashboard as an HTML page or a Google Sheets / Excel workbook, showing the key metrics, how much each source of growth contributes, and whether each source is growing, flat or declining. Uses a standard chart guide and one UI spec, so every dashboard looks and reads the same. Use when the user says "growth dashboard", "growth overview", "see all my growth sources", "which channel brings growth", "track my key metrics", "build me a dashboard of my growth", or "refresh my growth dashboard".
+description: Build a growth overview dashboard for someone who has never made one. It asks a few plain questions (what industry, which metrics you grow, where the data is, which sources bring growth), checks the numbers, and builds the dashboard as an HTML page or a Google Sheets / Excel workbook, showing the key metrics, how much each source of growth contributes, and whether each source is growing, flat or declining. Uses a standard chart guide and one UI spec, so every dashboard looks and reads the same. Use when the user says "growth dashboard", "growth overview", "see all my growth sources", "which channel brings growth", "track my key metrics", "build me a dashboard of my growth", "make me an Excel tracking dashboard", "growth tracker", "spreadsheet dashboard", or "refresh my growth dashboard".
 ---
 
 # Growth dashboard — one page that shows what grows and what drives it
@@ -88,6 +88,9 @@ sign-in, tell them where to do it, then wait. If a file is already attached, rea
 what you found (columns, date range, guessed sources and metrics) at the top of your steps 1–4
 message as suggestions to confirm.
 
+**Partial answers:** if the user skips or half-answers anything in steps 1–4, don't ask again. Use
+your own suggestion and mark it in the plan as "(my pick)" so they can change it at step 5.
+
 ## Step 4 — Sources of growth
 1. Ask which sources bring growth today. Suggest the usual ones for their industry
    (`references/industries.md`) grouped as **Paid** (search, social, video, app ads…), **Owned**
@@ -107,7 +110,8 @@ shows what (from `references/chart-guide.md`), and **the version**: "1. a web pa
 browser, or 2. a Google Sheets / Excel file". If they are not sure: a spreadsheet when they will
 share it with a team or edit it, a web page when it is just for them. Add **one line of pushback** if you see a problem
 (e.g. "paid is only ~8% of your users, so the total will barely move even if paid doubles").
-Ask what to add or remove. End the message with exactly this line and nothing after it:
+Add a one-line sketch of the page ("You'll see: 4 tiles, bars by source, a status table"). Ask what to
+add or remove. End the message with exactly this line and nothing after it:
 `Reply yes to approve the plan.` Then **stop and wait. Build nothing before the user says yes.**
 
 ## Step 6 — Pull the numbers
@@ -174,7 +178,10 @@ Tell the user, in a few lines: where the file is, what the page shows, the 2–3
 already say (facts with their source, not advice), what is not covered, and how to refresh
 ("say 'refresh my growth dashboard'", or automatic when the data is a live connection; in Google
 Sheets, the `Data` tab can be fed by a connected source and everything else recalculates, see
-`references/spreadsheet-spec.md`). Offer a
+`references/spreadsheet-spec.md`). Say: "Open the workbook in Excel or Google Sheets, not a file
+previewer; previews can show empty cells until it recalculates." And: "Next time, attach
+`growth-dashboard-spec.md` and the new data file, and say refresh" (chat tools don't keep files
+between chats). Offer a
 daily refresh only if their tool can schedule tasks, and set one up only on their yes (rule 35).
 In kstack: end with `skills/session-close/`.
 

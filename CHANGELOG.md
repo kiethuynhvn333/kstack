@@ -10,6 +10,9 @@ breaks these rules. Steps after 5 moved: Checks is step 7, Build is 8, Hand over
 A second Gemini test showed plan and Checks still merged and the sample used despite an attached CSV, so the
 plan and Checks now end with a fixed "Reply yes" line, "use your suggestions" never approves them, and the
 sample is never used when a data file is attached.
+Also: Excel/tracking-dashboard trigger phrases, a rule for partial answers (take your own pick and mark it),
+a one-line page sketch in the plan, and hand-over lines about opening the workbook in Excel/Sheets and
+bringing the spec file back to refresh.
 
 ## v0.5.0 — See what grows, and what drives it (2026-10-28)
 
