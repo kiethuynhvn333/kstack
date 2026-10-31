@@ -1,6 +1,6 @@
 # kstack
 
-**Memory with skills for growth and paid media.**
+**A memory-based system with skills to help your AI agent work with you on growth.**
 
 kstack gives your AI agent saved project context and ready-made steps for your work:
 
@@ -61,8 +61,8 @@ Reusable skills define the steps for recurring tasks. Approval rules set the bou
 
 ## What it is
 
-Memory, skills and instructions for people working on growth and paid media with an AI agent.
-Use it for paid search, paid social, tracking, reporting and experiments. Set it up once, then
+A memory-based system with skills to help your AI agent work with you on growth.
+Use it to build growth dashboards, check numbers and track experiments. Set it up once, then
 save your work and lessons in files your agent can read in the next session.
 
 It is open source: Markdown files and shell scripts, with Git for version history.
