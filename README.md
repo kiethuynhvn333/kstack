@@ -1,10 +1,14 @@
 # kstack
 
-kstack is an open-source workspace for digital-media and growth practitioners working with AI agents.
+**Memory with skills for growth and paid media.**
 
-Paid-media and growth work spans goals, campaigns, experiments, reporting and decisions. When that context is scattered across chats and documents, both you and your agent have to reconstruct the project before work can continue.
+kstack gives your AI agent saved project context and ready-made steps for your work:
 
-kstack gives each objective a project home for its decisions, experiments, open items, session worklogs and its own knowledge. A shared knowledge hub holds metric definitions and lessons that hold across projects. Agent instructions define what to read first, which checks to run and when to ask for approval. This lets a practitioner and an agent follow the same project map.
+- **Memory:** files that keep your goals, decisions, experiments and lessons, so your agent can pick up where you left off.
+- **Skills:** steps for tasks like building a growth dashboard or checking your numbers.
+- **Instructions:** rules for how your agent works and when it needs your approval.
+
+Your memory stays in files you own. Use it with an AI agent that can read and write local files, such as Claude Code, Codex, Cursor or Gemini CLI.
 
 > **New in v0.5:** say "build me a growth dashboard" and your agent walks you through one view of the
 > metrics you grow and which sources of growth drive them, as a web page or a Google Sheets / Excel file
@@ -57,13 +61,11 @@ Reusable skills define the steps for recurring tasks. Approval rules set the bou
 
 ## What it is
 
-An open-source workspace for digital-media and growth practitioners working with AI agents on
-paid search, paid social, tracking, reporting and experiments. Clone it, answer a 10-minute setup
-interview, and new sessions can start from your recorded business context, projects, decisions and
-past mistakes.
+Memory, skills and instructions for people working on growth and paid media with an AI agent.
+Use it for paid search, paid social, tracking, reporting and experiments. Set it up once, then
+save your work and lessons in files your agent can read in the next session.
 
-Works with any agent that can read files: Claude Code, Codex, Cursor, Gemini CLI and others.
-No install, no server, no database — just Markdown files and shell scripts, synced with git.
+It is open source: Markdown files and shell scripts, with Git for version history.
 
 > Built from ~4 months of daily use by an in-house performance marketer. The public version is a
 > neutral template: every example uses a made-up company.
